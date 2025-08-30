@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,9 +6,9 @@
     <title>TaskFlow Pro - AI-Powered Productivity</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDK v9+ -->
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        // ✅ FIXED: Added getApps to the import statement
+        import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { 
             getAuth, 
             signInWithEmailAndPassword, 
@@ -38,8 +38,14 @@
             appId: "FIREBASE_APP_ID_PLACEHOLDER"
         };
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
+        // ✅ FIXED: Initialize Firebase only if it hasn't been initialized yet
+        let app;
+        if (!getApps().length) {
+            app = initializeApp(firebaseConfig);
+        } else {
+            app = getApps()[0]; // Use the existing app
+        }
+
         const auth = getAuth(app);
         const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
@@ -61,8 +67,8 @@
             updateDoc
         };
 
-        // Initialize app when DOM is loaded
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        // ✅ FIXED: Removed the incorrect event listener that was calling initializeApp a second time.
+
     </script>
     
     <style>
