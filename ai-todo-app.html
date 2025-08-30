@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Todo & Goals</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            padding: 4px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: transform 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+            width: auto;
+            margin: 0 5px;
+        }
+
+        .ai-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            margin-top: 15px;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+
+        .todo-item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .todo-item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .todo-checkbox {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+        }
+
+        .todo-content {
+            flex: 1;
+        }
+
+        .todo-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .todo-meta {
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .priority-indicator {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .priority-high {
+            background: #ffe6e6;
+            color: #d63031;
+        }
+
+        .priority-medium {
+            background: #fff3e0;
+            color: #e17055;
+        }
+
+        .priority-low {
+            background: #e8f5e8;
+            color: #00b894;
+        }
+
+        .delete-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .goal-colors {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .color-option.selected {
+            border-color: #333;
+        }
+
+        .progress-container {
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+            text-transform: uppercase;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .goal-item {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .goal-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .goal-name {
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .ai-sorting {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid #ff6b6b;
+            color: #d63031;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .loading {
+            animation: pulse 1.5s infinite;
+        }
+
+        .chart-container {
+            height: 200px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 AI Todo & Goals</h1>
+            <p>Smart productivity with AI prioritization</p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('todos')">Tasks</div>
+            <div class="tab" onclick="switchTab('goals')">Goals</div>
+            <div class="tab" onclick="switchTab('progress')">Progress</div>
+        </div>
+
+        <!-- Tasks Tab -->
+        <div id="todos-tab" class="tab-content active">
+            <div class="card">
+                <h3 style="margin-bottom: 15px;">Add New Task</h3>
+                <div class="input-group">
+                    <label>Task Description</label>
+                    <input type="text" id="taskInput" placeholder="What do you need to do?">
+                </div>
+                <div class="input-group">
+                    <label>Goal</label>
+                    <select id="taskGoal">
+                        <option value="">Select a goal...</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Effort Level</label>
+                    <select id="taskEffort">
+                        <option value="low">Quick (< 30min)</option>
+                        <option value="medium">Medium (30min - 2hrs)</option>
+                        <option value="high">Long (> 2hrs)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Due Date (Optional)</label>
+                    <input type="date" id="taskDueDate">
+                </div>
+                <button class="btn" onclick="addTask()">Add Task</button>
+                <button class="btn ai-btn" onclick="aiPrioritize()">🤖 AI Re-prioritize</button>
+            </div>
+
+            <div id="aiSortingIndicator" class="ai-sorting" style="display: none;">
+                <div class="loading">🤖 AI is analyzing and prioritizing your tasks...</div>
+            </div>
+
+            <div id="todoList"></div>
+        </div>
+
+        <!-- Goals Tab -->
+        <div id="goals-tab" class="tab-content">
+            <div class="card">
+                <h3 style="margin-bottom: 15px;">Add New Goal</h3>
+                <div class="input-group">
+                    <label>Goal Name</label>
+                    <input type="text" id="goalInput" placeholder="What's your goal?">
+                </div>
+                <div class="input-group">
+                    <label>Description</label>
+                    <textarea id="goalDescription" placeholder="Describe your goal..." rows="3"></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Target Date</label>
+                    <input type="date" id="goalTargetDate">
+                </div>
+                <div class="input-group">
+                    <label>Priority Level</label>
+                    <select id="goalPriority">
+                        <option value="high">High Priority</option>
+                        <option value="medium">Medium Priority</option>
+                        <option value="low">Low Priority</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Color Theme</label>
+                    <div class="goal-colors">
+                        <div class="color-option selected" style="background: #667eea" data-color="#667eea"></div>
+                        <div class="color-option" style="background: #00b894" data-color="#00b894"></div>
+                        <div class="color-option" style="background: #e17055" data-color="#e17055"></div>
+                        <div class="color-option" style="background: #a29bfe" data-color="#a29bfe"></div>
+                        <div class="color-option" style="background: #fd79a8" data-color="#fd79a8"></div>
+                        <div class="color-option" style="background: #fdcb6e" data-color="#fdcb6e"></div>
+                    </div>
+                </div>
+                <button class="btn" onclick="addGoal()">Add Goal</button>
+            </div>
+
+            <div id="goalsList"></div>
+        </div>
+
+        <!-- Progress Tab -->
+        <div id="progress-tab" class="tab-content">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalTasks">0</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="completedTasks">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+            </div>
+
+            <div id="goalProgress"></div>
+        </div>
+    </div>
+
+    <script>
+        let goals = JSON.parse(localStorage.getItem('aiTodoGoals')) || [];
+        let tasks = JSON.parse(localStorage.getItem('aiTodoTasks')) || [];
+        let selectedColor = '#667eea';
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            renderGoals();
+            renderTasks();
+            renderProgress();
+            updateTaskGoalOptions();
+        });
+
+        function switchTab(tabName) {
+            // Remove active class from all tabs and contents
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Add active class to selected tab and content
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Update progress when switching to progress tab
+            if (tabName === 'progress') {
+                renderProgress();
+            }
+        }
+
+        function addGoal() {
+            const name = document.getElementById('goalInput').value.trim();
+            const description = document.getElementById('goalDescription').value.trim();
+            const targetDate = document.getElementById('goalTargetDate').value;
+            const priority = document.getElementById('goalPriority').value;
+            
+            if (!name) {
+                alert('Please enter a goal name');
+                return;
+            }
+            
+            const goal = {
+                id: Date.now(),
+                name,
+                description,
+                targetDate,
+                priority,
+                color: selectedColor,
+                createdAt: new Date().toISOString()
+            };
+            
+            goals.push(goal);
+            localStorage.setItem('aiTodoGoals', JSON.stringify(goals));
+            
+            // Clear form
+            document.getElementById('goalInput').value = '';
+            document.getElementById('goalDescription').value = '';
+            document.getElementById('goalTargetDate').value = '';
+            
+            renderGoals();
+            updateTaskGoalOptions();
+        }
+
+        function addTask() {
+            const description = document.getElementById('taskInput').value.trim();
+            const goalId = document.getElementById('taskGoal').value;
+            const effort = document.getElementById('taskEffort').value;
+            const dueDate = document.getElementById('taskDueDate').value;
+            
+            if (!description) {
+                alert('Please enter a task description');
+                return;
+            }
+            
+            const goal = goals.find(g => g.id == goalId);
+            
+            const task = {
+                id: Date.now(),
+                description,
+                goalId: goalId || null,
+                goalName: goal ? goal.name : null,
+                goalColor: goal ? goal.color : '#999999',
+                effort,
+                dueDate,
+                completed: false,
+                createdAt: new Date().toISOString(),
+                priority: 'medium',
+                aiScore: 0
+            };
+            
+            tasks.push(task);
+            localStorage.setItem('aiTodoTasks', JSON.stringify(tasks));
+            
+            // Clear form
+            document.getElementById('taskInput').value = '';
+            document.getElementById('taskGoal').value = '';
+            document.getElementById('taskDueDate').value = '';
+            
+            renderTasks();
+        }
+
+        async function aiPrioritize() {
+            if (tasks.length === 0) {
+                alert('Add some tasks first!');
+                return;
+            }
+
+            const indicator = document.getElementById('aiSortingIndicator');
+            indicator.style.display = 'block';
+
+            try {
+                // Simulate AI processing with actual intelligent sorting
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // AI Prioritization Logic
+                tasks.forEach(task => {
+                    let score = 0;
+                    
+                    // Goal alignment boost
+                    if (task.goalId) {
+                        const goal = goals.find(g => g.id == task.goalId);
+                        if (goal) {
+                            switch(goal.priority) {
+                                case 'high': score += 30; break;
+                                case 'medium': score += 20; break;
+                                case 'low': score += 10; break;
+                            }
+                        }
+                    }
+                    
+                    // Urgency based on due date
+                    if (task.dueDate) {
+                        const daysUntilDue = Math.ceil((new Date(task.dueDate) - new Date()) / (1000 * 60 * 60 * 24));
+                        if (daysUntilDue <= 1) score += 25;
+                        else if (daysUntilDue <= 3) score += 15;
+                        else if (daysUntilDue <= 7) score += 10;
+                    }
+                    
+                    // Effort consideration (quick wins vs important long tasks)
+                    switch(task.effort) {
+                        case 'low': score += 15; break; // Quick wins
+                        case 'medium': score += 10; break;
+                        case 'high': score += 5; break; // Important but time-consuming
+                    }
+                    
+                    // Boost uncompleted tasks
+                    if (!task.completed) score += 10;
+                    
+                    // Add some randomness for variety
+                    score += Math.random() * 5;
+                    
+                    task.aiScore = score;
+                    
+                    // Assign priority based on score
+                    if (score >= 40) task.priority = 'high';
+                    else if (score >= 25) task.priority = 'medium';
+                    else task.priority = 'low';
+                });
+
+                // Sort by AI score
+                tasks.sort((a, b) => b.aiScore - a.aiScore);
+                
+                localStorage.setItem('aiTodoTasks', JSON.stringify(tasks));
+                
+                indicator.innerHTML = '✅ AI has optimized your task order based on goals, urgency, and effort!';
+                setTimeout(() => {
+                    indicator.style.display = 'none';
+                }, 3000);
+                
+                renderTasks();
+                
+            } catch (error) {
+                indicator.innerHTML = '❌ AI prioritization failed. Tasks sorted by creation date.';
+                setTimeout(() => {
+                    indicator.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        function toggleTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.completed = !task.completed;
+                task.completedAt = task.completed ? new Date().toISOString() : null;
+                localStorage.setItem('aiTodoTasks', JSON.stringify(tasks));
+                renderTasks();
+                renderProgress();
+            }
+        }
+
+        function deleteTask(taskId) {
+            tasks = tasks.filter(t => t.id !== taskId);
+            localStorage.setItem('aiTodoTasks', JSON.stringify(tasks));
+            renderTasks();
+            renderProgress();
+        }
+
+        function deleteGoal(goalId) {
+            if (confirm('Delete this goal? Associated tasks will lose their goal connection.')) {
+                goals = goals.filter(g => g.id !== goalId);
+                
+                // Update tasks to remove goal association
+                tasks.forEach(task => {
+                    if (task.goalId == goalId) {
+                        task.goalId = null;
+                        task.goalName = null;
+                        task.goalColor = '#999999';
+                    }
+                });
+                
+                localStorage.setItem('aiTodoGoals', JSON.stringify(goals));
+                localStorage.setItem('aiTodoTasks', JSON.stringify(tasks));
+                
+                renderGoals();
+                renderTasks();
+                updateTaskGoalOptions();
+            }
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('todoList');
+            
+            if (tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 48px; margin-bottom: 15px;">📝</div>
+                        <p>No tasks yet. Add your first task above!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = tasks.map(task => `
+                <div class="todo-item ${task.completed ? 'completed' : ''}" style="border-left-color: ${task.goalColor}">
+                    <input type="checkbox" class="todo-checkbox" ${task.completed ? 'checked' : ''} 
+                           onchange="toggleTask(${task.id})">
+                    <div class="todo-content">
+                        <div class="todo-title">${task.description}</div>
+                        <div class="todo-meta">
+                            ${task.goalName ? `<span>🎯 ${task.goalName}</span>` : ''}
+                            <span class="priority-indicator priority-${task.priority}">${task.priority}</span>
+                            ${task.dueDate ? `<span>📅 ${new Date(task.dueDate).toLocaleDateString()}</span>` : ''}
+                            <span>⚡ ${task.effort}</span>
+                        </div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteTask(${task.id})">×</button>
+                </div>
+            `).join('');
+        }
+
+        function renderGoals() {
+            const container = document.getElementById('goalsList');
+            
+            if (goals.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 48px; margin-bottom: 15px;">🎯</div>
+                        <p>No goals yet. Create your first goal above!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = goals.map(goal => {
+                const relatedTasks = tasks.filter(t => t.goalId == goal.id);
+                const completedTasks = relatedTasks.filter(t => t.completed);
+                const progress = relatedTasks.length > 0 ? (completedTasks.length / relatedTasks.length) * 100 : 0;
+                
+                return `
+                    <div class="goal-item">
+                        <div class="goal-header">
+                            <div class="goal-name" style="color: ${goal.color}">${goal.name}</div>
+                            <button class="delete-btn" onclick="deleteGoal(${goal.id})">×</button>
+                        </div>
+                        ${goal.description ? `<p style="margin-bottom: 10px; color: #666;">${goal.description}</p>` : ''}
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progress}%; background: ${goal.color}"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; color: #666;">
+                                <span>${completedTasks.length}/${relatedTasks.length} tasks completed</span>
+                                <span>${Math.round(progress)}%</span>
+                            </div>
+                        </div>
+                        <div style="font-size: 12px; color: #666; margin-top: 10px;">
+                            Priority: ${goal.priority} ${goal.targetDate ? `• Target: ${new Date(goal.targetDate).toLocaleDateString()}` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderProgress() {
+            const totalTasksEl = document.getElementById('totalTasks');
+            const completedTasksEl = document.getElementById('completedTasks');
+            const goalProgressEl = document.getElementById('goalProgress');
+            
+            const totalTasks = tasks.length;
+            const completedTasks = tasks.filter(t => t.completed).length;
+            
+            totalTasksEl.textContent = totalTasks;
+            completedTasksEl.textContent = completedTasks;
+            
+            if (goals.length === 0) {
+                goalProgressEl.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 48px; margin-bottom: 15px;">📊</div>
+                        <p>Create some goals to see progress charts!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            goalProgressEl.innerHTML = goals.map(goal => {
+                const relatedTasks = tasks.filter(t => t.goalId == goal.id);
+                const completedTasks = relatedTasks.filter(t => t.completed);
+                const progress = relatedTasks.length > 0 ? (completedTasks.length / relatedTasks.length) * 100 : 0;
+                
+                return `
+                    <div class="card">
+                        <h4 style="color: ${goal.color}; margin-bottom: 15px;">${goal.name}</h4>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progress}%; background: ${goal.color}"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span>${completedTasks.length}/${relatedTasks.length} tasks</span>
+                                <span style="font-weight: 600;">${Math.round(progress)}%</span>
+                            </div>
+                        </div>
+                        ${goal.targetDate ? `
+                            <div style="font-size: 14px; color: #666;">
+                                Target Date: ${new Date(goal.targetDate).toLocaleDateString()}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateTaskGoalOptions() {
+            const select = document.getElementById('taskGoal');
+            select.innerHTML = '<option value="">Select a goal...</option>' + 
+                goals.map(goal => `<option value="${goal.id}">${goal.name}</option>`).join('');
+        }
+
+        // Color selection for goals
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('color-option')) {
+                document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+                e.target.classList.add('selected');
+                selectedColor = e.target.dataset.color;
+            }
+        });
+
+        // Enter key support for inputs
+        document.getElementById('taskInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') addTask();
+        });
+        
+        document.getElementById('goalInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') addGoal();
+        });
+    </script>
+</body>
+</html>
