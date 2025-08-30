@@ -154,8 +154,17 @@
         .filter-buttons button { background: none; border: 1px solid var(--border); color: var(--text-secondary); padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-left: 8px; }
         .filter-buttons button.active { background-color: var(--primary); color: white; border-color: var(--primary); }
         .item { display: flex; align-items: center; gap: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: var(--radius-lg); }
-        .item-content {  }
-        .item-actions { /* Add this new rule */margin-left: auto; }
+        
+        /* ✅ FIX: Removed flex: 1; to prevent unwanted growing */
+        .item-content {
+            /* No styles needed here now */
+        }
+        
+        /* ✅ FIX: Added this rule to push buttons to the right */
+        .item-actions {
+            margin-left: auto;
+        }
+
         .item-actions button { background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 4px; }
         .item-actions button:hover { color: var(--primary); }
         .priority-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; }
@@ -383,8 +392,8 @@
                             <div class="item-content">
                                 <div class="task-description">${task.description}</div>
                                 <div class="task-details">
-                                    <span class="priority-dot priority-${task.priority}"></span>
-                                    <span>${task.priority} Priority</span>
+                                    <span class="priority-dot priority-${task.priority || 'Medium'}"></span>
+                                    <span>${task.priority || 'Medium'} Priority</span>
                                     ${task.dueDate ? `<span>&nbsp;•&nbsp; Due: ${new Date(task.dueDate).toLocaleDateString()}</span>` : ''}
                                 </div>
                             </div>
@@ -492,7 +501,7 @@
         function toggleTheme() {
             const newTheme = document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
             document.body.setAttribute('data-theme', newTheme);
-localStorage.setItem('theme', newTheme);
+            localStorage.setItem('theme', newTheme);
         }
 
         function updateTaskGoalOptions() { /* Logic for goals can be re-added here */ }
