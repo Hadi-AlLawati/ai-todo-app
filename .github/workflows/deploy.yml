@@ -35,14 +35,14 @@ jobs:
       
       - name: Debug - Verify Replacement
         run: |
-          echo "Searching for any remaining placeholders..."
-          # This command will search for the placeholder and print the file path if it's found.
-          # If it finds anything, the 'if' condition will be true, and the script will fail.
-          if grep -r "FIREBASE_API_KEY_PLACEHOLDER" .; then
+          echo "Searching for any remaining placeholders in .html and .js files..."
+          # This command searches for the placeholder, but ONLY in files ending with .js or .html.
+          # If it finds a match, it prints the file(s) and fails the build.
+          if grep -r --include=\*.{js,html} "FIREBASE_API_KEY_PLACEHOLDER" .; then
             echo "Error: Found placeholder text in the file(s) listed above. Failing the build."
             exit 1
           else
-            echo "Success: No placeholders found. Proceeding with deployment."
+            echo "Success: No placeholders found in source files. Proceeding with deployment."
           fi
 
       - name: Setup GitHub Pages
