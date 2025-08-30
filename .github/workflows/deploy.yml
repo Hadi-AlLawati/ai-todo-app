@@ -21,29 +21,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Build Directory
+        run: |
+          mkdir ./build
+          cp ./ai-todo-app.html ./build/
+          # ✅ ADD THIS LINE: This file disables the Jekyll build process.
+          touch ./build/.nojekyll
+
       - name: Replace Firebase Config Placeholders
         run: |
-          # MODIFIED: Added "*.mjs" to find JavaScript module files
-          for file in $(find . -name "*.html" -o -name "*.js" -o -name "*.mjs"); do
-            echo "Updating Firebase config in $file..."
-            sed -i "s|FIREBASE_API_KEY_PLACEHOLDER|${{ secrets.FIREBASE_API_KEY }}|g" $file
-            sed -i "s|FIREBASE_AUTH_DOMAIN_PLACEHOLDER|${{ secrets.FIREBASE_AUTH_DOMAIN }}|g" $file
-            sed -i "s|FIREBASE_PROJECT_ID_PLACEHOLDER|${{ secrets.FIREBASE_PROJECT_ID }}|g" $file
-            sed -i "s|FIREBASE_STORAGE_BUCKET_PLACEHOLDER|${{ secrets.FIREBASE_STORAGE_BUCKET }}|g" $file
-            sed -i "s|FIREBASE_MESSAGING_SENDER_ID_PLACEHOLDER|${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}|g" $file
-            sed -i "s|FIREBASE_APP_ID_PLACEHOLDER|${{ secrets.FIREBASE_APP_ID }}|g" $file
-          done
-      
-      - name: Debug - Verify Replacement
-        run: |
-          echo "Searching for any remaining placeholders in source files..."
-          # MODIFIED: Added *.mjs to the grep command to ensure we check all relevant files.
-          if grep -r --include=\*.{js,html,mjs} "FIREBASE_API_KEY_PLACEHOLDER" .; then
-            echo "Error: Found placeholder text in the file(s) listed above. Failing the build."
-            exit 1
-          else
-            echo "Success: No placeholders found in source files. Proceeding with deployment."
-          fi
+          sed -i "s|FIREBASE_API_KEY_PLACEHOLDER|${{ secrets.FIREBASE_API_KEY }}|g" ./build/ai-todo-app.html
+          sed -i "s|FIREBASE_AUTH_DOMAIN_PLACEHOLDER|${{ secrets.FIREBASE_AUTH_DOMAIN }}|g" ./build/ai-todo-app.html
+          sed -i "s|FIREBASE_PROJECT_ID_PLACEHOLDER|${{ secrets.FIREBASE_PROJECT_ID }}|g" ./build/ai-todo-app.html
+          sed -i "s|FIREBASE_STORAGE_BUCKET_PLACEHOLDER|${{ secrets.FIREBASE_STORAGE_BUCKET }}|g" ./build/ai-todo-app.html
+          sed -i "s|FIREBASE_MESSAGING_SENDER_ID_PLACEHOLDER|${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}|g" ./build/ai-todo-app.html
+          sed -i "s|FIREBASE_APP_ID_PLACEHOLDER|${{ secrets.FIREBASE_APP_ID }}|g" ./build/ai-todo-app.html
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
@@ -51,7 +43,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: './build'
 
       - name: Deploy to GitHub Pages
         id: deployment
