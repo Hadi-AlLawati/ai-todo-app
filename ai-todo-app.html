@@ -186,6 +186,7 @@
 <body>
     <script>
         // --- GLOBAL STATE ---
+        let saveTimeout = null; // Add this line
         let currentUser = null;
         let goals = [];
         let tasks = [];
@@ -373,6 +374,14 @@
         }
 
         // --- App functions ---
+// --- NEW: Debounced Save Function ---
+        function requestSave() {
+            clearTimeout(saveTimeout); // Clear any pending save
+            // Set a new timer to save after 1.5 seconds of inactivity
+            saveTimeout = setTimeout(saveUserData, 1500);
+        }
+
+        // --- App functions (Updated to use requestSave) ---
         function addTask() {
             if (!taskInput.value.trim()) return;
             tasks.push({ 
@@ -386,14 +395,14 @@
             taskInput.value = ''; 
             taskDueDate.value = '';
             renderTasks();
-            saveUserData();
+            requestSave(); // Use debounced save
         }
 
         function deleteTask(id) {
             if (!confirm('Are you sure you want to delete this task?')) return;
             tasks = tasks.filter(t => t.id !== Number(id));
             renderTasks();
-            saveUserData();
+            requestSave(); // Use debounced save
         }
 
         function toggleTask(id) {
@@ -401,11 +410,11 @@
             if (task) {
                 task.completed = !task.completed;
                 renderTasks();
-                saveUserData();
+                requestSave(); // Use debounced save
             }
         }
 
-        // --- EDIT MODAL FUNCTIONS ---
+        // --- EDIT MODAL FUNCTIONS (Updated to use requestSave) ---
         function openEditModal(id) {
             currentEditTaskId = Number(id);
             const task = tasks.find(t => t.id === currentEditTaskId);
@@ -425,15 +434,40 @@
         function saveTaskChanges() {
             const task = tasks.find(t => t.id === currentEditTaskId);
             if(task) {
-                // ✅ FIXED: Correctly updates the task with values from the edit form
                 task.description = editTaskInput.value.trim();
                 task.dueDate = editTaskDueDate.value;
                 task.priority = editTaskPriority.value;
                 
                 renderTasks();
-                saveUserData();
+                requestSave(); // Use debounced save
                 closeEditModal();
             }
+        }
+
+        // --- AI FEATURE (SIMULATED) (Updated to use requestSave) ---
+        function handleAIGoalBreakdown() {
+            const goal = aiGoalInput.value.trim();
+            if(!goal) return;
+            
+            aiLoadingState.classList.remove('hidden');
+            
+            setTimeout(() => {
+                const simulatedSubtasks = [ 
+                    `Finalize objectives for '${goal}'`, 
+                    `Identify key stakeholders for '${goal}'`, 
+                    `Develop a timeline and key milestones`, 
+                    `Allocate budget and resources`, 
+                    `Hold a kickoff meeting` 
+                ];
+                simulatedSubtasks.forEach(desc => { 
+                    tasks.push({ id: Date.now(), description: desc, priority: 'High', dueDate: '', completed: false, createdAt: new Date().toISOString() }); 
+                });
+                
+                aiGoalInput.value = '';
+                aiLoadingState.classList.add('hidden');
+                renderTasks(); 
+                requestSave(); // Use debounced save
+            }, 1500); 
         }
 
         // --- AI FEATURE (SIMULATED) ---
