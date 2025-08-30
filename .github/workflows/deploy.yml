@@ -23,7 +23,8 @@ jobs:
 
       - name: Replace Firebase Config Placeholders
         run: |
-          for file in $(find . -name "*.html" -o -name "*.js"); do
+          # MODIFIED: Added "*.mjs" to find JavaScript module files
+          for file in $(find . -name "*.html" -o -name "*.js" -o -name "*.mjs"); do
             echo "Updating Firebase config in $file..."
             sed -i "s|FIREBASE_API_KEY_PLACEHOLDER|${{ secrets.FIREBASE_API_KEY }}|g" $file
             sed -i "s|FIREBASE_AUTH_DOMAIN_PLACEHOLDER|${{ secrets.FIREBASE_AUTH_DOMAIN }}|g" $file
@@ -35,10 +36,9 @@ jobs:
       
       - name: Debug - Verify Replacement
         run: |
-          echo "Searching for any remaining placeholders in .html and .js files..."
-          # This command searches for the placeholder, but ONLY in files ending with .js or .html.
-          # If it finds a match, it prints the file(s) and fails the build.
-          if grep -r --include=\*.{js,html} "FIREBASE_API_KEY_PLACEHOLDER" .; then
+          echo "Searching for any remaining placeholders in source files..."
+          # MODIFIED: Added *.mjs to the grep command to ensure we check all relevant files.
+          if grep -r --include=\*.{js,html,mjs} "FIREBASE_API_KEY_PLACEHOLDER" .; then
             echo "Error: Found placeholder text in the file(s) listed above. Failing the build."
             exit 1
           else
