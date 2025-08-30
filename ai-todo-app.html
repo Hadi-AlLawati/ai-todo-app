@@ -630,6 +630,7 @@
             select.innerHTML = '<option value="">Select a goal...</option>' + 
                 goals.map(goal => `<option value="${goal.id}">${goal.name}</option>`).join('');
         }
+        document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
 </html> 
