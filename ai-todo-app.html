@@ -7,28 +7,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script type="module">
-        // ✅ FIXED: Added getApps to the import statement
         import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { 
-            getAuth, 
-            signInWithEmailAndPassword, 
-            createUserWithEmailAndPassword,
-            signInWithPopup,
-            GoogleAuthProvider,
-            signOut,
-            onAuthStateChanged,
-            updateProfile
+            getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+            signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, updateProfile
         } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { 
-            getFirestore, 
-            doc, 
-            setDoc, 
-            getDoc, 
-            updateDoc
+            getFirestore, doc, setDoc, getDoc, updateDoc
         } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-        // 🔒 SECURE: Firebase config will be injected during build
-        // These placeholders will be replaced with actual values from GitHub secrets
         const firebaseConfig = {
             apiKey: "FIREBASE_API_KEY_PLACEHOLDER",
             authDomain: "FIREBASE_AUTH_DOMAIN_PLACEHOLDER", 
@@ -38,203 +25,70 @@
             appId: "FIREBASE_APP_ID_PLACEHOLDER"
         };
 
-        // ✅ FIXED: Initialize Firebase only if it hasn't been initialized yet
         let app;
         if (!getApps().length) {
             app = initializeApp(firebaseConfig);
         } else {
-            app = getApps()[0]; // Use the existing app
+            app = getApps()[0];
         }
 
         const auth = getAuth(app);
         const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
 
-        // Make functions global for onclick handlers
         window.firebase = {
-            auth,
-            db,
-            googleProvider,
-            signInWithEmailAndPassword,
-            createUserWithEmailAndPassword,
-            signInWithPopup,
-            signOut,
-            onAuthStateChanged,
-            updateProfile,
-            doc,
-            setDoc,
-            getDoc,
-            updateDoc
+            auth, db, googleProvider,
+            signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup,
+            signOut, onAuthStateChanged, updateProfile,
+            doc, setDoc, getDoc, updateDoc
         };
-
-        // ✅ FIXED: Removed the incorrect event listener that was calling initializeApp a second time.
-
     </script>
     
     <style>
         :root {
             --primary: #2563eb;
             --primary-dark: #1d4ed8;
-            --surface: #ffffff;
+            --danger-bg: #fee2e2;
+            --danger-border: #fca5a5;
+            --danger-text: #b91c1c;
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --radius-lg: 0.75rem;
+
+            /* Light Theme */
+            --bg-primary: #f1f5f9;
+            --bg-secondary: #ffffff;
             --text-primary: #0f172a;
             --text-secondary: #64748b;
             --border: #e2e8f0;
-            --danger: #ef4444;
-            --accent: #10b981;
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-            --radius-lg: 0.75rem;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        body[data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #334155;
         }
 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
             color: var(--text-primary);
+            transition: background 0.3s, color 0.3s;
         }
+        .container { max-width: 700px; margin: 0 auto; padding: 24px 20px; }
+        .hidden { display: none !important; }
 
-        .container {
-            max-width: 420px;
-            margin: 0 auto;
-            padding: 24px 20px;
-            min-height: 100vh;
-        }
-
-        /* Auth Styles */
-        .auth-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .auth-card {
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            padding: 40px;
-            box-shadow: var(--shadow-lg);
-            max-width: 400px;
-            width: 100%;
-            text-align: center;
-        }
-
-        .auth-header h1 {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .auth-header p {
-            color: var(--text-secondary);
-            margin-bottom: 32px;
-        }
-
-        .auth-input {
-            width: 100%;
-            padding: 14px 16px;
-            border: 1.5px solid var(--border);
-            border-radius: var(--radius-lg);
-            font-size: 14px;
-            margin-bottom: 16px;
-            transition: border-color 0.2s;
-        }
-
-        .auth-input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .auth-btn {
-            width: 100%;
-            padding: 14px 20px;
-            border: none;
-            border-radius: var(--radius-lg);
-            font-weight: 600;
-            cursor: pointer;
-            margin-bottom: 12px;
-            transition: all 0.2s;
-        }
-
-        .auth-btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .auth-btn-primary:hover {
-            background: var(--primary-dark);
-        }
-
-        .auth-btn-google {
-            background: white;
-            border: 1.5px solid var(--border);
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .error-message {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: var(--danger);
-            padding: 12px;
-            border-radius: var(--radius-lg);
-            margin-bottom: 16px;
-            font-size: 13px;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        /* App Styles */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
-            color: white;
-        }
-
-        .header h1 {
-            font-size: 32px;
-            font-weight: 700;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(255, 255, 255, 0.15);
-            padding: 8px 12px;
-            border-radius: var(--radius-lg);
-        }
-
-        .logout-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-        }
-
+        /* General Styles */
         .card {
-            background: var(--surface);
+            background: var(--bg-secondary);
             border-radius: var(--radius-lg);
             padding: 24px;
             margin-bottom: 20px;
             box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
         }
-
         .btn {
             background: var(--primary);
             color: white;
@@ -245,142 +99,167 @@
             cursor: pointer;
             width: 100%;
             margin-top: 12px;
+            transition: background 0.2s;
         }
-
-        .btn:hover {
-            background: var(--primary-dark);
-        }
-
-        input, select {
+        .btn:hover { background: var(--primary-dark); }
+        input, select, textarea {
             width: 100%;
             padding: 12px;
-            border: 1.5px solid var(--border);
+            border: 1px solid var(--border);
             border-radius: var(--radius-lg);
             margin-bottom: 16px;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 14px;
         }
+        input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
-        .todo-item {
-            display: flex;
-            align-items: center;
-            padding: 16px;
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            margin-bottom: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+        /* Auth Screen */
+        .auth-container { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+        .auth-card { max-width: 400px; width: 100%; text-align: center; }
+        .auth-header h1 { font-size: 28px; margin-bottom: 8px; }
+        .auth-header p { color: var(--text-secondary); margin-bottom: 32px; }
+        .error-message { background: var(--danger-bg); border: 1px solid var(--danger-border); color: var(--danger-text); padding: 12px; border-radius: var(--radius-lg); margin-bottom: 16px; font-size: 13px; }
 
-        .todo-checkbox {
-            margin-right: 16px;
-        }
+        /* App Screen Header */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        .header h1 { font-size: 32px; }
+        .user-profile { display: flex; align-items: center; gap: 16px; }
+        .logout-btn { background: none; border: 1px solid var(--border); color: var(--text-primary); padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+        
+        /* Theme Toggle */
+        .theme-switch-wrapper { display: flex; align-items: center; }
+        .theme-switch { display: inline-block; height: 24px; position: relative; width: 48px; }
+        .theme-switch input { display: none; }
+        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 24px; }
+        .slider:before { background-color: #fff; bottom: 4px; content: ""; height: 16px; left: 4px; position: absolute; transition: .4s; width: 16px; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(24px); }
 
-        .todo-content {
-            flex: 1;
-        }
+        /* Task/Goal Lists */
+        .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .filter-buttons button { background: none; border: 1px solid var(--border); color: var(--text-secondary); padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-left: 8px; }
+        .filter-buttons button.active { background-color: var(--primary); color: white; border-color: var(--primary); }
+        .item { display: flex; align-items: center; gap: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: var(--radius-lg); }
+        .item-content { flex: 1; }
+        .item-actions button { background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 4px; }
+        .item-actions button:hover { color: var(--primary); }
+        .priority-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .priority-High { background-color: #ef4444; }
+        .priority-Medium { background-color: #f59e0b; }
+        .priority-Low { background-color: #22c55e; }
+        .task-description { font-weight: 500; }
+        .task-details { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+        .task-completed .task-description { text-decoration: line-through; opacity: 0.6; }
 
-        .empty-state {
-            text-align: center;
-            padding: 48px 20px;
-            color: var(--text-secondary);
-        }
+        /* Modal Styles */
+        .modal { position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: var(--bg-secondary); padding: 30px; border: 1px solid var(--border); border-radius: var(--radius-lg); width: 90%; max-width: 500px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .close-button { color: var(--text-secondary); font-size: 28px; font-weight: bold; cursor: pointer; }
+
     </style>
 </head>
 <body>
-    <!-- Auth Screen -->
-    <div id="authScreen" class="auth-container">
-        <div class="auth-card">
-            <div class="auth-header">
-                <h1>TaskFlow Pro</h1>
-                <p>AI-Powered Productivity Suite</p>
-            </div>
-
-            <div id="errorMessage" class="error-message hidden"></div>
-
-            <div id="loginForm">
-                <input type="email" id="loginEmail" class="auth-input" placeholder="Email" required>
-                <input type="password" id="loginPassword" class="auth-input" placeholder="Password" required>
-                <button class="auth-btn auth-btn-primary" onclick="handleEmailLogin()">Sign In</button>
-                
-                <button class="auth-btn auth-btn-google" onclick="handleGoogleLogin()">
-                    <svg width="18" height="18" viewBox="0 0 24 24">
-                        <path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34a853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#fbbc05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#ea4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    Continue with Google
-                </button>
-                
-                <p style="margin-top: 16px; font-size: 14px; color: var(--text-secondary);">
-                    Don't have an account? <a href="#" onclick="showSignup()" style="color: var(--primary);">Sign Up</a>
-                </p>
-            </div>
-
-            <div id="signupForm" class="hidden">
-                <input type="text" id="signupName" class="auth-input" placeholder="Full Name" required>
-                <input type="email" id="signupEmail" class="auth-input" placeholder="Email" required>
-                <input type="password" id="signupPassword" class="auth-input" placeholder="Password (min 8 chars)" required minlength="8">
-                <button class="auth-btn auth-btn-primary" onclick="handleEmailSignup()">Create Account</button>
-                
-                <button class="auth-btn auth-btn-google" onclick="handleGoogleLogin()">
-                    <svg width="18" height="18" viewBox="0 0 24 24">
-                        <path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    </svg>
-                    Continue with Google
-                </button>
-                
-                <p style="margin-top: 16px; font-size: 14px; color: var(--text-secondary);">
-                    Already have an account? <a href="#" onclick="showLogin()" style="color: var(--primary);">Sign In</a>
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- App Screen -->
-    <div id="appScreen" class="container hidden">
-        <div class="header">
-            <div>
-                <h1>TaskFlow Pro</h1>
-                <p style="opacity: 0.9;">AI-Powered Productivity</p>
-            </div>
-            <div class="user-profile">
-                <div>
-                    <div id="userName" style="font-weight: 600; font-size: 13px;"></div>
-                    <div id="userEmail" style="font-size: 11px; opacity: 0.7;"></div>
-                </div>
-                <button class="logout-btn" onclick="handleLogout()">Sign Out</button>
-            </div>
-        </div>
-
-        <div class="card">
-            <h3 style="margin-bottom: 20px;">Add New Task</h3>
-            <input type="text" id="taskInput" placeholder="What needs to be done?">
-            <select id="taskGoal">
-                <option value="">Select a goal...</option>
-            </select>
-            <button class="btn" onclick="addTask()">Add Task</button>
-        </div>
-
-        <div class="card">
-            <h3 style="margin-bottom: 20px;">Add New Goal</h3>
-            <input type="text" id="goalInput" placeholder="Enter your goal...">
-            <button class="btn" onclick="addGoal()">Add Goal</button>
-        </div>
-
-        <div id="todoList"></div>
-        <div id="goalsList"></div>
-    </div>
-
     <script>
-        // Global variables
+        // --- GLOBAL STATE ---
         let currentUser = null;
         let goals = [];
         let tasks = [];
+        let currentFilter = 'All';
+        let currentEditTaskId = null;
 
-        // Initialize when Firebase is loaded
+        // --- TEMPLATES ---
+        const authScreenHTML = `
+            <div id="authScreen" class="auth-container">
+                <div class="auth-card card">
+                    <div class="auth-header">
+                        <h1>TaskFlow Pro</h1>
+                        <p>AI-Powered Productivity Suite</p>
+                    </div>
+                    <div id="errorMessage" class="error-message hidden"></div>
+                    <div id="loginForm">
+                        <input type="email" id="loginEmail" placeholder="Email" required><input type="password" id="loginPassword" placeholder="Password" required>
+                        <button class="btn" onclick="handleEmailLogin()">Sign In</button>
+                        <p style="margin-top:16px; font-size:14px;">Don't have an account? <a href="#" onclick="showSignup(event)">Sign Up</a></p>
+                    </div>
+                    <div id="signupForm" class="hidden">
+                        <input type="text" id="signupName" placeholder="Full Name" required><input type="email" id="signupEmail" placeholder="Email" required><input type="password" id="signupPassword" placeholder="Password (min 8 chars)" required minlength="8">
+                        <button class="btn" onclick="handleEmailSignup()">Create Account</button>
+                        <p style="margin-top:16px; font-size:14px;">Already have an account? <a href="#" onclick="showLogin(event)">Sign In</a></p>
+                    </div>
+                </div>
+            </div>`;
+
+        const appScreenHTML = `
+            <div id="appScreen" class="container hidden">
+                <div class="header">
+                    <h1>TaskFlow Pro</h1>
+                    <div class="user-profile">
+                        <div class="theme-switch-wrapper">
+                            <label class="theme-switch" for="theme-checkbox">
+                                <input type="checkbox" id="theme-checkbox" onchange="toggleTheme()" />
+                                <div class="slider"></div>
+                            </label>
+                        </div>
+                        <div>
+                            <div id="userName" style="font-weight: 600;"></div>
+                            <div id="userEmail" style="font-size: 12px; opacity: 0.7;"></div>
+                        </div>
+                        <button class="logout-btn" onclick="handleLogout()">Sign Out</button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>🤖 AI-Powered Goal Breakdown</h3>
+                    <p style="font-size:14px; color: var(--text-secondary); margin-bottom:16px;">Enter a large goal and let AI break it down into smaller tasks for you.</p>
+                    <input type="text" id="aiGoalInput" placeholder="e.g., Launch a new marketing campaign">
+                    <button class="btn" onclick="handleAIGoalBreakdown()">Break It Down</button>
+                    <div id="aiLoadingState" class="hidden" style="text-align:center; padding:10px;">Thinking...</div>
+                </div>
+
+                <div class="card">
+                    <h3>Add New Task</h3>
+                    <div class="form-grid">
+                        <input type="text" id="taskInput" placeholder="What needs to be done?">
+                        <select id="taskPriority"><option value="Medium">Medium Priority</option><option value="High">High Priority</option><option value="Low">Low Priority</option></select>
+                    </div>
+                    <div class="form-grid">
+                         <input type="date" id="taskDueDate">
+                         <select id="taskGoal"><option value="">Link to a goal...</option></select>
+                    </div>
+                    <button class="btn" onclick="addTask()">Add Task</button>
+                </div>
+
+                <div id="todoList"></div>
+            </div>`;
+
+        const editModalHTML = `
+            <div id="editModal" class="modal hidden">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Edit Task</h2>
+                        <span class="close-button" onclick="closeEditModal()">&times;</span>
+                    </div>
+                    <input type="text" id="editTaskInput" placeholder="Task description">
+                    <div class="form-grid">
+                        <input type="date" id="editTaskDueDate">
+                        <select id="editTaskPriority"><option value="Low">Low</option><option value="Medium">Medium</option><option value="High">High</option></select>
+                    </div>
+                    <button class="btn" onclick="saveTaskChanges()">Save Changes</button>
+                </div>
+            </div>`;
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.innerHTML = authScreenHTML + appScreenHTML + editModalHTML;
+            initializeApp();
+            initializeTheme();
+        });
+
         function initializeApp() {
-            const { onAuthStateChanged } = window.firebase;
-            
-            onAuthStateChanged(window.firebase.auth, async (user) => {
+            window.firebase.onAuthStateChanged(window.firebase.auth, async (user) => {
                 if (user) {
                     currentUser = user;
                     await loadUserData();
@@ -392,184 +271,125 @@
             });
         }
 
-        // Auth functions
-        function showLogin() {
-            document.getElementById('loginForm').classList.remove('hidden');
-            document.getElementById('signupForm').classList.add('hidden');
-            clearError();
-        }
-
-        function showSignup() {
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('signupForm').classList.remove('hidden');
-            clearError();
-        }
+        // --- AUTH FUNCTIONS ---
+        const showLogin = (e) => { e.preventDefault(); document.getElementById('loginForm').classList.remove('hidden'); document.getElementById('signupForm').classList.add('hidden'); };
+        const showSignup = (e) => { e.preventDefault(); document.getElementById('loginForm').classList.add('hidden'); document.getElementById('signupForm').classList.remove('hidden'); };
 
         async function handleEmailLogin() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
             try {
-                await window.firebase.signInWithEmailAndPassword(window.firebase.auth, email, password);
-            } catch (error) {
-                showError(error.message);
-            }
+                await window.firebase.signInWithEmailAndPassword(window.firebase.auth, loginEmail.value, loginPassword.value);
+            } catch (error) { showError(error.message); }
         }
 
         async function handleEmailSignup() {
-            const name = document.getElementById('signupName').value;
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
-            
-            if (password.length < 8) {
-                showError('Password must be at least 8 characters');
+            try {
+                const cred = await window.firebase.createUserWithEmailAndPassword(window.firebase.auth, signupEmail.value, signupPassword.value);
+                await window.firebase.updateProfile(cred.user, { displayName: signupName.value });
+                await window.firebase.setDoc(window.firebase.doc(window.firebase.db, 'users', cred.user.uid), {
+                    name: signupName.value, email: signupEmail.value, createdAt: new Date(), goals: [], tasks: []
+                });
+            } catch (error) { showError(error.message); }
+        }
+
+        async function handleLogout() { await window.firebase.signOut(window.firebase.auth); }
+
+        // --- UI FUNCTIONS ---
+        function showAuthScreen() { authScreen.classList.remove('hidden'); appScreen.classList.add('hidden'); }
+        function showAppScreen() {
+            authScreen.classList.add('hidden'); appScreen.classList.remove('hidden');
+            userName.textContent = currentUser.displayName || 'User';
+            userEmail.textContent = currentUser.email;
+            renderAll();
+        }
+        function showError(message) { errorMessage.textContent = message; errorMessage.classList.remove('hidden'); }
+        
+        // --- DATA FUNCTIONS ---
+        async function loadUserData() {
+            const userDoc = await window.firebase.getDoc(window.firebase.doc(window.firebase.db, 'users', currentUser.uid));
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                goals = data.goals || []; tasks = data.tasks || [];
+            }
+        }
+        async function saveUserData() {
+            await window.firebase.updateDoc(window.firebase.doc(window.firebase.db, 'users', currentUser.uid), {
+                goals, tasks, lastUpdated: new Date()
+            });
+        }
+
+        // --- CRUD & RENDER FUNCTIONS ---
+        function renderAll() {
+            renderTasks();
+            updateTaskGoalOptions();
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('todoList');
+            const filteredTasks = tasks.filter(task => {
+                if (currentFilter === 'Completed') return task.completed;
+                if (currentFilter === 'Active') return !task.completed;
+                return true;
+            });
+
+            if (filteredTasks.length === 0) {
+                container.innerHTML = '<div class="card" style="text-align:center;"><p>No tasks here. Add one above!</p></div>';
                 return;
             }
-            
-            try {
-                const userCredential = await window.firebase.createUserWithEmailAndPassword(window.firebase.auth, email, password);
-                await window.firebase.updateProfile(userCredential.user, { displayName: name });
-                
-                await window.firebase.setDoc(window.firebase.doc(window.firebase.db, 'users', userCredential.user.uid), {
-                    name: name,
-                    email: email,
-                    createdAt: new Date(),
-                    goals: [],
-                    tasks: []
-                });
-            } catch (error) {
-                showError(error.message);
-            }
+
+            container.innerHTML = `
+                <div class="card">
+                    <div class="list-header">
+                        <h3>Your Tasks</h3>
+                        <div class="filter-buttons">
+                            <button onclick="filterTasks('All')" class="${currentFilter === 'All' ? 'active' : ''}">All</button>
+                            <button onclick="filterTasks('Active')" class="${currentFilter === 'Active' ? 'active' : ''}">Active</button>
+                            <button onclick="filterTasks('Completed')" class="${currentFilter === 'Completed' ? 'active' : ''}">Completed</button>
+                        </div>
+                    </div>
+                    ${filteredTasks.map(task => `
+                        <div class="item ${task.completed ? 'task-completed' : ''}">
+                            <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${task.id})">
+                            <div class="item-content">
+                                <div class="task-description">${task.description}</div>
+                                <div class="task-details">
+                                    <span class="priority-dot priority-${task.priority}"></span>
+                                    <span>${task.priority} Priority</span>
+                                    ${task.dueDate ? `<span>&nbsp;•&nbsp; Due: ${new Date(task.dueDate).toLocaleDateString()}</span>` : ''}
+                                </div>
+                            </div>
+                            <div class="item-actions">
+                                <button onclick="openEditModal(${task.id})">✏️</button>
+                                <button onclick="deleteTask(${task.id})">🗑️</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>`;
         }
 
-        async function handleGoogleLogin() {
-            try {
-                const result = await window.firebase.signInWithPopup(window.firebase.auth, window.firebase.googleProvider);
-                const user = result.user;
-                
-                const userDoc = await window.firebase.getDoc(window.firebase.doc(window.firebase.db, 'users', user.uid));
-                if (!userDoc.exists()) {
-                    await window.firebase.setDoc(window.firebase.doc(window.firebase.db, 'users', user.uid), {
-                        name: user.displayName,
-                        email: user.email,
-                        photoURL: user.photoURL,
-                        createdAt: new Date(),
-                        goals: [],
-                        tasks: []
-                    });
-                }
-            } catch (error) {
-                showError(error.message);
-            }
-        }
-
-        async function handleLogout() {
-            try {
-                await window.firebase.signOut(window.firebase.auth);
-            } catch (error) {
-                showError('Error signing out');
-            }
-        }
-
-        // UI functions
-        function showAuthScreen() {
-            document.getElementById('authScreen').classList.remove('hidden');
-            document.getElementById('appScreen').classList.add('hidden');
-        }
-
-        function showAppScreen() {
-            document.getElementById('authScreen').classList.add('hidden');
-            document.getElementById('appScreen').classList.remove('hidden');
-            
-            document.getElementById('userName').textContent = currentUser.displayName || 'User';
-            document.getElementById('userEmail').textContent = currentUser.email;
-            
-            renderTasks();
-            renderGoals();
-            updateTaskGoalOptions();
-        }
-
-        function showError(message) {
-            document.getElementById('errorMessage').textContent = message;
-            document.getElementById('errorMessage').classList.remove('hidden');
-        }
-
-        function clearError() {
-            document.getElementById('errorMessage').classList.add('hidden');
-        }
-
-        // Data functions
-        async function loadUserData() {
-            try {
-                const userDoc = await window.firebase.getDoc(window.firebase.doc(window.firebase.db, 'users', currentUser.uid));
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    goals = userData.goals || [];
-                    tasks = userData.tasks || [];
-                }
-            } catch (error) {
-                console.error('Error loading data:', error);
-            }
-        }
-
-        async function saveUserData() {
-            try {
-                await window.firebase.updateDoc(window.firebase.doc(window.firebase.db, 'users', currentUser.uid), {
-                    goals: goals,
-                    tasks: tasks,
-                    lastUpdated: new Date()
-                });
-            } catch (error) {
-                console.error('Error saving data:', error);
-            }
-        }
-
-        // App functions
         async function addTask() {
-            const description = document.getElementById('taskInput').value.trim();
-            const goalId = document.getElementById('taskGoal').value;
-            
-            if (!description) return;
-            
-            const goal = goals.find(g => g.id == goalId);
-            
-            const task = {
+            if (!taskInput.value.trim()) return;
+            tasks.push({
                 id: Date.now(),
-                description,
-                goalId: goalId || null,
-                goalName: goal ? goal.name : null,
+                description: taskInput.value.trim(),
+                priority: taskPriority.value,
+                dueDate: taskDueDate.value,
                 completed: false,
                 createdAt: new Date().toISOString()
-            };
-            
-            tasks.push(task);
+            });
             await saveUserData();
-            
-            document.getElementById('taskInput').value = '';
+            taskInput.value = ''; taskDueDate.value = '';
             renderTasks();
         }
 
-        async function addGoal() {
-            const name = document.getElementById('goalInput').value.trim();
-            
-            if (!name) return;
-            
-            const goal = {
-                id: Date.now(),
-                name,
-                createdAt: new Date().toISOString()
-            };
-            
-            goals.push(goal);
+        async function deleteTask(id) {
+            if (!confirm('Are you sure you want to delete this task?')) return;
+            tasks = tasks.filter(t => t.id !== id);
             await saveUserData();
-            
-            document.getElementById('goalInput').value = '';
-            renderGoals();
-            updateTaskGoalOptions();
+            renderTasks();
         }
 
-        async function toggleTask(taskId) {
-            const task = tasks.find(t => t.id === taskId);
+        async function toggleTask(id) {
+            const task = tasks.find(t => t.id === id);
             if (task) {
                 task.completed = !task.completed;
                 await saveUserData();
@@ -577,60 +397,91 @@
             }
         }
 
-        function renderTasks() {
-            const container = document.getElementById('todoList');
-            
-            if (tasks.length === 0) {
-                container.innerHTML = '<div class="empty-state"><div style="font-size: 48px;">📝</div><p>No tasks yet!</p></div>';
-                return;
+        // --- EDIT MODAL FUNCTIONS ---
+        function openEditModal(id) {
+            currentEditTaskId = id;
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                editTaskInput.value = task.description;
+                editTaskDueDate.value = task.dueDate;
+                editTaskPriority.value = task.priority;
+                editModal.classList.remove('hidden');
             }
-            
-            container.innerHTML = tasks.map(task => `
-                <div class="todo-item">
-                    <input type="checkbox" class="todo-checkbox" ${task.completed ? 'checked' : ''} 
-                           onchange="toggleTask(${task.id})">
-                    <div class="todo-content">
-                        <div style="font-weight: 500;">${task.description}</div>
-                        ${task.goalName ? `<div style="font-size: 12px; color: var(--text-secondary);">🎯 ${task.goalName}</div>` : ''}
-                    </div>
-                </div>
-            `).join('');
+        }
+        function closeEditModal() { editModal.classList.add('hidden'); currentEditTaskId = null; }
+        
+        async function saveTaskChanges() {
+            const task = tasks.find(t => t.id === currentEditTaskId);
+            if(task) {
+                task.description = editTaskInput.value.trim();
+                task.dueDate = editTaskDueDate.value;
+                task.priority = editTaskPriority.value;
+                await saveUserData();
+                renderTasks();
+                closeEditModal();
+            }
         }
 
-        function renderGoals() {
-            const container = document.getElementById('goalsList');
+        // --- AI FEATURE (SIMULATED) ---
+        async function handleAIGoalBreakdown() {
+            const goal = aiGoalInput.value.trim();
+            if(!goal) return;
             
-            if (goals.length === 0) {
-                container.innerHTML = '<div class="empty-state"><div style="font-size: 48px;">🎯</div><p>No goals yet!</p></div>';
-                return;
-            }
-            
-            container.innerHTML = goals.map(goal => {
-                const relatedTasks = tasks.filter(t => t.goalId == goal.id);
-                const completed = relatedTasks.filter(t => t.completed).length;
-                const total = relatedTasks.length;
-                const progress = total > 0 ? (completed / total) * 100 : 0;
-                
-                return `
-                    <div class="card">
-                        <h4 style="color: var(--primary); margin-bottom: 12px;">${goal.name}</h4>
-                        <div style="background: #e5e7eb; height: 8px; border-radius: 4px; margin-bottom: 8px;">
-                            <div style="width: ${progress}%; height: 100%; background: var(--primary); border-radius: 4px;"></div>
-                        </div>
-                        <div style="font-size: 13px; color: var(--text-secondary);">
-                            ${completed}/${total} tasks completed (${Math.round(progress)}%)
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            aiLoadingState.classList.remove('hidden');
+            // 🤖 In a real app, you would make an API call to an AI service here.
+            // Example: const subtasks = await myAIAPI.breakdownGoal(goal);
+            // For now, we'll simulate the response after 2 seconds.
+            setTimeout(async () => {
+                const simulatedSubtasks = [
+                    `Finalize objectives for '${goal}'`,
+                    `Identify key stakeholders for '${goal}'`,
+                    `Develop a timeline and key milestones`,
+                    `Allocate budget and resources`,
+                    `Hold a kickoff meeting`
+                ];
+                simulatedSubtasks.forEach(desc => {
+                    tasks.push({ id: Date.now(), description: desc, priority: 'High', dueDate: '', completed: false, createdAt: new Date().toISOString() });
+                });
+                await saveUserData();
+                aiGoalInput.value = '';
+                aiLoadingState.classList.add('hidden');
+                renderTasks();
+            }, 2000);
         }
 
-        function updateTaskGoalOptions() {
-            const select = document.getElementById('taskGoal');
-            select.innerHTML = '<option value="">Select a goal...</option>' + 
-                goals.map(goal => `<option value="${goal.id}">${goal.name}</option>`).join('');
+        // --- UI ENHANCEMENT FUNCTIONS ---
+        function filterTasks(filter) { currentFilter = filter; renderTasks(); }
+
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            document.getElementById('theme-checkbox').checked = savedTheme === 'dark';
         }
-        document.addEventListener('DOMContentLoaded', initializeApp);
+
+        function toggleTheme() {
+            const newTheme = document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        function updateTaskGoalOptions() { /* Logic for goals can be re-added here */ }
+
+        // Make functions globally accessible for onclick handlers
+        window.handleEmailLogin = handleEmailLogin;
+        window.handleEmailSignup = handleEmailSignup;
+        window.handleLogout = handleLogout;
+        window.showLogin = showLogin;
+        window.showSignup = showSignup;
+        window.addTask = addTask;
+        window.deleteTask = deleteTask;
+        window.toggleTask = toggleTask;
+        window.openEditModal = openEditModal;
+        window.closeEditModal = closeEditModal;
+        window.saveTaskChanges = saveTaskChanges;
+        window.filterTasks = filterTasks;
+        window.toggleTheme = toggleTheme;
+        window.handleAIGoalBreakdown = handleAIGoalBreakdown;
+
     </script>
 </body>
-</html> 
+</html>
