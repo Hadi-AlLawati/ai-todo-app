@@ -316,8 +316,7 @@
         async function saveUserData() { await window.firebase.updateDoc(window.firebase.doc(window.firebase.db, 'users', currentUser.uid), { goals, tasks, lastUpdated: new Date() });}
 
         // --- CRUD & RENDER FUNCTIONS ---
-        function renderAll() { renderTasks(); updateTaskGoalOptions(); }
-        function renderTasks() {
+       function renderTasks() {
             const container = document.getElementById('todoList');
             const filteredTasks = tasks.filter(task => {
                 if (currentFilter === 'Completed') return task.completed === true;
@@ -325,11 +324,40 @@
                 return true;
             });
 
+            let tasksContentHTML;
+
             if (filteredTasks.length === 0) {
-                container.innerHTML = `<div class="card" style="text-align:center;"><p>No ${currentFilter.toLowerCase()} tasks here!</p></div>`;
-                return;
+                // This is the message for when a filter results in an empty list.
+                tasksContentHTML = `<div style="text-align:center; padding: 40px 20px; color: var(--text-secondary);">
+                                        <p>No ${currentFilter.toLowerCase()} tasks here!</p>
+                                    </div>`;
+            } else {
+                // This generates the list of task items.
+                tasksContentHTML = filteredTasks.map(task => `
+                    <div class="item ${task.completed ? 'task-completed' : ''}">
+                        <div class="item-main">
+                            <label class="custom-checkbox">
+                                <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${task.id})">
+                                <span class="checkmark"></span>
+                            </label>
+                            <div class="item-content">
+                                <div class="task-description">${task.description}</div>
+                                <div class="task-details">
+                                    <span class="priority-dot priority-${task.priority || 'Medium'}"></span>
+                                    <span>${task.priority || 'Medium'} Priority</span>
+                                    ${task.dueDate ? `<span>&nbsp;•&nbsp; Due: ${new Date(task.dueDate).toLocaleDateString()}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item-actions">
+                            <button onclick="openEditModal(${task.id})">✏️</button>
+                            <button onclick="deleteTask(${task.id})">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
             }
 
+            // This new structure ensures the header and filter buttons are ALWAYS visible.
             container.innerHTML = `
                 <div class="card">
                     <div class="list-header">
@@ -340,28 +368,7 @@
                             <button onclick="filterTasks('Completed')" class="${currentFilter === 'Completed' ? 'active' : ''}">Completed</button>
                         </div>
                     </div>
-                    ${filteredTasks.map(task => `
-                        <div class="item ${task.completed ? 'task-completed' : ''}">
-                            <div class="item-main">
-                                <label class="custom-checkbox">
-                                    <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${task.id})">
-                                    <span class="checkmark"></span>
-                                </label>
-                                <div class="item-content">
-                                    <div class="task-description">${task.description}</div>
-                                    <div class="task-details">
-                                        <span class="priority-dot priority-${task.priority || 'Medium'}"></span>
-                                        <span>${task.priority || 'Medium'} Priority</span>
-                                        ${task.dueDate ? `<span>&nbsp;•&nbsp; Due: ${new Date(task.dueDate).toLocaleDateString()}</span>` : ''}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="item-actions">
-                                <button onclick="openEditModal(${task.id})">✏️</button>
-                                <button onclick="deleteTask(${task.id})">🗑️</button>
-                            </div>
-                        </div>
-                    `).join('')}
+                    ${tasksContentHTML}
                 </div>`;
         }
 
