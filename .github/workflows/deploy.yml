@@ -2,12 +2,10 @@
 
 name: Deploy AI Task Manager to GitHub Pages
 
-# Run this workflow on pushes to the main branch
 on:
   push:
     branches: [ "main" ]
 
-# Allow this job to clone the repo and create a page deployment
 permissions:
   contents: read
   pages: write
@@ -25,8 +23,6 @@ jobs:
 
       - name: Replace Firebase Config Placeholders
         run: |
-          # This loop finds all .html and .js files in your project directory
-          # and replaces the placeholder strings with your actual Firebase secrets.
           for file in $(find . -name "*.html" -o -name "*.js"); do
             echo "Updating Firebase config in $file..."
             sed -i "s|FIREBASE_API_KEY_PLACEHOLDER|${{ secrets.FIREBASE_API_KEY }}|g" $file
@@ -39,14 +35,14 @@ jobs:
       
       - name: Debug - Verify Replacement
         run: |
-          echo "Verifying that placeholders are gone. Grep should find nothing."
-          # This command searches for the placeholder. If it's found, the workflow will fail.
-          # We expect it to find nothing, which means the replacement was successful.
-          if grep -q "FIREBASE_API_KEY_PLACEHOLDER" -r .; then
-            echo "Error: Placeholder key was found after replacement step."
+          echo "Searching for any remaining placeholders..."
+          # This command will search for the placeholder and print the file path if it's found.
+          # If it finds anything, the 'if' condition will be true, and the script will fail.
+          if grep -r "FIREBASE_API_KEY_PLACEHOLDER" .; then
+            echo "Error: Found placeholder text in the file(s) listed above. Failing the build."
             exit 1
           else
-            echo "Success: Placeholder key not found."
+            echo "Success: No placeholders found. Proceeding with deployment."
           fi
 
       - name: Setup GitHub Pages
@@ -55,7 +51,6 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload the entire repository
           path: '.'
 
       - name: Deploy to GitHub Pages
