@@ -372,7 +372,7 @@
         // --- EDIT MODAL FUNCTIONS ---
         function openEditModal(id) { currentEditTaskId = id; const task = tasks.find(t => t.id === id); if (task) { editTaskInput.value = task.description; editTaskDueDate.value = task.dueDate; editTaskPriority.value = task.priority; editModal.classList.remove('hidden'); }}
         function closeEditModal() { editModal.classList.add('hidden'); currentEditTaskId = null; }
-        async function saveTaskChanges() { const task = tasks.find(t => t.id === currentEditTaskId); if(task) { task.description = editTaskInput.value.trim(); task.dueDate = editTaskDueDate.value; task.priority = editTaskPriority.value; await saveUserData(); renderTasks(); closeEditModal(); }}
+        async function saveTaskChanges() { const task = tasks.find(t => t.id === currentEditTaskId); if(task) {task.completed = !task.completed; renderTasks(); saveUserData();}}
 
         // --- AI FEATURE (SIMULATED) ---
         async function handleAIGoalBreakdown() { const goal = aiGoalInput.value.trim(); if(!goal) return; aiLoadingState.classList.remove('hidden'); setTimeout(async () => { const simulatedSubtasks = [ `Finalize objectives for '${goal}'`, `Identify key stakeholders for '${goal}'`, `Develop a timeline and key milestones`, `Allocate budget and resources`, `Hold a kickoff meeting` ]; simulatedSubtasks.forEach(desc => { tasks.push({ id: Date.now(), description: desc, priority: 'High', dueDate: '', completed: false, createdAt: new Date().toISOString() }); }); await saveUserData(); aiGoalInput.value = ''; aiLoadingState.classList.add('hidden'); renderTasks(); }, 2000); }
