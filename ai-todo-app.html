@@ -153,18 +153,8 @@
         .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .filter-buttons button { background: none; border: 1px solid var(--border); color: var(--text-secondary); padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-left: 8px; }
         .filter-buttons button.active { background-color: var(--primary); color: white; border-color: var(--primary); }
-        .item { display: flex; align-items: center; gap: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: var(--radius-lg); }
-        
-        /* ✅ FIX: Removed flex: 1; to prevent unwanted growing */
-        .item-content {
-            /* No styles needed here now */
-        }
-        
-        /* ✅ FIX: Added this rule to push buttons to the right */
-        .item-actions {
-            margin-left: auto;
-        }
-
+        .item { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: var(--radius-lg); }
+        .item-main { display: flex; align-items: center; gap: 16px; }
         .item-actions button { background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 4px; }
         .item-actions button:hover { color: var(--primary); }
         .priority-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; }
@@ -174,6 +164,16 @@
         .task-description { font-weight: 500; }
         .task-details { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
         .task-completed .task-description { text-decoration: line-through; opacity: 0.6; }
+        
+        /* ✅ NEW: Custom Checkbox Styles */
+        .custom-checkbox { display: block; position: relative; cursor: pointer; font-size: 22px; user-select: none; }
+        .custom-checkbox input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+        .checkmark { position: relative; display: block; height: 24px; width: 24px; background-color: var(--bg-primary); border: 2px solid var(--border); border-radius: 50%; transition: background-color 0.2s; }
+        .custom-checkbox:hover input ~ .checkmark { background-color: #ccc; }
+        .custom-checkbox input:checked ~ .checkmark { background-color: var(--primary); border-color: var(--primary); }
+        .checkmark:after { content: ""; position: absolute; display: none; }
+        .custom-checkbox input:checked ~ .checkmark:after { display: block; }
+        .custom-checkbox .checkmark:after { left: 8px; top: 4px; width: 5px; height: 10px; border: solid white; border-width: 0 3px 3px 0; transform: rotate(45deg); }
 
         /* Modal Styles */
         .modal { position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; }
@@ -301,78 +301,32 @@
         const showLogin = (e) => { e.preventDefault(); document.getElementById('loginForm').classList.remove('hidden'); document.getElementById('signupForm').classList.add('hidden'); };
         const showSignup = (e) => { e.preventDefault(); document.getElementById('loginForm').classList.add('hidden'); document.getElementById('signupForm').classList.remove('hidden'); };
 
-        async function handleEmailLogin() {
-            try {
-                await window.firebase.signInWithEmailAndPassword(window.firebase.auth, loginEmail.value, loginPassword.value);
-            } catch (error) { showError(error.message); }
-        }
-
-        async function handleEmailSignup() {
-            try {
-                const cred = await window.firebase.createUserWithEmailAndPassword(window.firebase.auth, signupEmail.value, signupPassword.value);
-                await window.firebase.updateProfile(cred.user, { displayName: signupName.value });
-                await window.firebase.setDoc(window.firebase.doc(window.firebase.db, 'users', cred.user.uid), {
-                    name: signupName.value, email: signupEmail.value, createdAt: new Date(), goals: [], tasks: []
-                });
-            } catch (error) { showError(error.message); }
-        }
-
-        async function handleGoogleLogin() {
-            try {
-                const result = await window.firebase.signInWithPopup(window.firebase.auth, window.firebase.googleProvider);
-                const user = result.user;
-                const userDocRef = window.firebase.doc(window.firebase.db, 'users', user.uid);
-                const userDoc = await window.firebase.getDoc(userDocRef);
-                if (!userDoc.exists()) {
-                    await window.firebase.setDoc(userDocRef, {
-                        name: user.displayName, email: user.email, createdAt: new Date(), goals: [], tasks: []
-                    });
-                }
-            } catch (error) { showError(error.message); }
-        }
-
+        async function handleEmailLogin() { try { await window.firebase.signInWithEmailAndPassword(window.firebase.auth, loginEmail.value, loginPassword.value); } catch (error) { showError(error.message); }}
+        async function handleEmailSignup() { try { const cred = await window.firebase.createUserWithEmailAndPassword(window.firebase.auth, signupEmail.value, signupPassword.value); await window.firebase.updateProfile(cred.user, { displayName: signupName.value }); await window.firebase.setDoc(window.firebase.doc(window.firebase.db, 'users', cred.user.uid), { name: signupName.value, email: signupEmail.value, createdAt: new Date(), goals: [], tasks: [] }); } catch (error) { showError(error.message); }}
+        async function handleGoogleLogin() { try { const result = await window.firebase.signInWithPopup(window.firebase.auth, window.firebase.googleProvider); const user = result.user; const userDocRef = window.firebase.doc(window.firebase.db, 'users', user.uid); const userDoc = await window.firebase.getDoc(userDocRef); if (!userDoc.exists()) { await window.firebase.setDoc(userDocRef, { name: user.displayName, email: user.email, createdAt: new Date(), goals: [], tasks: [] }); } } catch (error) { showError(error.message); }}
         async function handleLogout() { await window.firebase.signOut(window.firebase.auth); }
 
         // --- UI FUNCTIONS ---
         function showAuthScreen() { authScreen.classList.remove('hidden'); appScreen.classList.add('hidden'); }
-        function showAppScreen() {
-            authScreen.classList.add('hidden'); appScreen.classList.remove('hidden');
-            userName.textContent = currentUser.displayName || 'User';
-            userEmail.textContent = currentUser.email;
-            renderAll();
-        }
+        function showAppScreen() { authScreen.classList.add('hidden'); appScreen.classList.remove('hidden'); userName.textContent = currentUser.displayName || 'User'; userEmail.textContent = currentUser.email; renderAll(); }
         function showError(message) { errorMessage.textContent = message; errorMessage.classList.remove('hidden'); }
         
         // --- DATA FUNCTIONS ---
-        async function loadUserData() {
-            const userDoc = await window.firebase.getDoc(window.firebase.doc(window.firebase.db, 'users', currentUser.uid));
-            if (userDoc.exists()) {
-                const data = userDoc.data();
-                goals = data.goals || []; tasks = data.tasks || [];
-            }
-        }
-        async function saveUserData() {
-            await window.firebase.updateDoc(window.firebase.doc(window.firebase.db, 'users', currentUser.uid), {
-                goals, tasks, lastUpdated: new Date()
-            });
-        }
+        async function loadUserData() { const userDoc = await window.firebase.getDoc(window.firebase.doc(window.firebase.db, 'users', currentUser.uid)); if (userDoc.exists()) { const data = userDoc.data(); goals = data.goals || []; tasks = data.tasks || []; }}
+        async function saveUserData() { await window.firebase.updateDoc(window.firebase.doc(window.firebase.db, 'users', currentUser.uid), { goals, tasks, lastUpdated: new Date() });}
 
         // --- CRUD & RENDER FUNCTIONS ---
-        function renderAll() {
-            renderTasks();
-            updateTaskGoalOptions();
-        }
-
+        function renderAll() { renderTasks(); updateTaskGoalOptions(); }
         function renderTasks() {
             const container = document.getElementById('todoList');
             const filteredTasks = tasks.filter(task => {
-                if (currentFilter === 'Completed') return task.completed;
+                if (currentFilter === 'Completed') return task.completed === true;
                 if (currentFilter === 'Active') return !task.completed;
                 return true;
             });
 
             if (filteredTasks.length === 0) {
-                container.innerHTML = '<div class="card" style="text-align:center;"><p>No tasks here. Add one above!</p></div>';
+                container.innerHTML = `<div class="card" style="text-align:center;"><p>No ${currentFilter.toLowerCase()} tasks here!</p></div>`;
                 return;
             }
 
@@ -388,13 +342,18 @@
                     </div>
                     ${filteredTasks.map(task => `
                         <div class="item ${task.completed ? 'task-completed' : ''}">
-                            <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${task.id})">
-                            <div class="item-content">
-                                <div class="task-description">${task.description}</div>
-                                <div class="task-details">
-                                    <span class="priority-dot priority-${task.priority || 'Medium'}"></span>
-                                    <span>${task.priority || 'Medium'} Priority</span>
-                                    ${task.dueDate ? `<span>&nbsp;•&nbsp; Due: ${new Date(task.dueDate).toLocaleDateString()}</span>` : ''}
+                            <div class="item-main">
+                                <label class="custom-checkbox">
+                                    <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${task.id})">
+                                    <span class="checkmark"></span>
+                                </label>
+                                <div class="item-content">
+                                    <div class="task-description">${task.description}</div>
+                                    <div class="task-details">
+                                        <span class="priority-dot priority-${task.priority || 'Medium'}"></span>
+                                        <span>${task.priority || 'Medium'} Priority</span>
+                                        ${task.dueDate ? `<span>&nbsp;•&nbsp; Due: ${new Date(task.dueDate).toLocaleDateString()}</span>` : ''}
+                                    </div>
                                 </div>
                             </div>
                             <div class="item-actions">
@@ -406,122 +365,26 @@
                 </div>`;
         }
 
-        async function addTask() {
-            if (!taskInput.value.trim()) return;
-            tasks.push({
-                id: Date.now(),
-                description: taskInput.value.trim(),
-                priority: taskPriority.value,
-                dueDate: taskDueDate.value,
-                completed: false,
-                createdAt: new Date().toISOString()
-            });
-            await saveUserData();
-            taskInput.value = ''; taskDueDate.value = '';
-            renderTasks();
-        }
-
-        async function deleteTask(id) {
-            if (!confirm('Are you sure you want to delete this task?')) return;
-            tasks = tasks.filter(t => t.id !== id);
-            await saveUserData();
-            renderTasks();
-        }
-
-        async function toggleTask(id) {
-            const task = tasks.find(t => t.id === id);
-            if (task) {
-                task.completed = !task.completed;
-                await saveUserData();
-                renderTasks();
-            }
-        }
+        async function addTask() { if (!taskInput.value.trim()) return; tasks.push({ id: Date.now(), description: taskInput.value.trim(), priority: taskPriority.value, dueDate: taskDueDate.value, completed: false, createdAt: new Date().toISOString() }); await saveUserData(); taskInput.value = ''; taskDueDate.value = ''; renderTasks(); }
+        async function deleteTask(id) { if (!confirm('Are you sure you want to delete this task?')) return; tasks = tasks.filter(t => t.id !== id); await saveUserData(); renderTasks(); }
+        async function toggleTask(id) { const task = tasks.find(t => t.id === Number(id)); if (task) { task.completed = !task.completed; await saveUserData(); renderTasks(); }}
 
         // --- EDIT MODAL FUNCTIONS ---
-        function openEditModal(id) {
-            currentEditTaskId = id;
-            const task = tasks.find(t => t.id === id);
-            if (task) {
-                editTaskInput.value = task.description;
-                editTaskDueDate.value = task.dueDate;
-                editTaskPriority.value = task.priority;
-                editModal.classList.remove('hidden');
-            }
-        }
+        function openEditModal(id) { currentEditTaskId = id; const task = tasks.find(t => t.id === id); if (task) { editTaskInput.value = task.description; editTaskDueDate.value = task.dueDate; editTaskPriority.value = task.priority; editModal.classList.remove('hidden'); }}
         function closeEditModal() { editModal.classList.add('hidden'); currentEditTaskId = null; }
-        
-        async function saveTaskChanges() {
-            const task = tasks.find(t => t.id === currentEditTaskId);
-            if(task) {
-                task.description = editTaskInput.value.trim();
-                task.dueDate = editTaskDueDate.value;
-                task.priority = editTaskPriority.value;
-                await saveUserData();
-                renderTasks();
-                closeEditModal();
-            }
-        }
+        async function saveTaskChanges() { const task = tasks.find(t => t.id === currentEditTaskId); if(task) { task.description = editTaskInput.value.trim(); task.dueDate = editTaskDueDate.value; task.priority = editTaskPriority.value; await saveUserData(); renderTasks(); closeEditModal(); }}
 
         // --- AI FEATURE (SIMULATED) ---
-        async function handleAIGoalBreakdown() {
-            const goal = aiGoalInput.value.trim();
-            if(!goal) return;
-            
-            aiLoadingState.classList.remove('hidden');
-            // 🤖 In a real app, you would make an API call to an AI service here.
-            // Example: const subtasks = await myAIAPI.breakdownGoal(goal);
-            // For now, we'll simulate the response after 2 seconds.
-            setTimeout(async () => {
-                const simulatedSubtasks = [
-                    `Finalize objectives for '${goal}'`,
-                    `Identify key stakeholders for '${goal}'`,
-                    `Develop a timeline and key milestones`,
-                    `Allocate budget and resources`,
-                    `Hold a kickoff meeting`
-                ];
-                simulatedSubtasks.forEach(desc => {
-                    tasks.push({ id: Date.now(), description: desc, priority: 'High', dueDate: '', completed: false, createdAt: new Date().toISOString() });
-                });
-                await saveUserData();
-                aiGoalInput.value = '';
-                aiLoadingState.classList.add('hidden');
-                renderTasks();
-            }, 2000);
-        }
+        async function handleAIGoalBreakdown() { const goal = aiGoalInput.value.trim(); if(!goal) return; aiLoadingState.classList.remove('hidden'); setTimeout(async () => { const simulatedSubtasks = [ `Finalize objectives for '${goal}'`, `Identify key stakeholders for '${goal}'`, `Develop a timeline and key milestones`, `Allocate budget and resources`, `Hold a kickoff meeting` ]; simulatedSubtasks.forEach(desc => { tasks.push({ id: Date.now(), description: desc, priority: 'High', dueDate: '', completed: false, createdAt: new Date().toISOString() }); }); await saveUserData(); aiGoalInput.value = ''; aiLoadingState.classList.add('hidden'); renderTasks(); }, 2000); }
 
         // --- UI ENHANCEMENT FUNCTIONS ---
         function filterTasks(filter) { currentFilter = filter; renderTasks(); }
-
-        function initializeTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.body.setAttribute('data-theme', savedTheme);
-            document.getElementById('theme-checkbox').checked = savedTheme === 'dark';
-        }
-
-        function toggleTheme() {
-            const newTheme = document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-            document.body.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-        }
-
+        function initializeTheme() { const savedTheme = localStorage.getItem('theme') || 'light'; document.body.setAttribute('data-theme', savedTheme); document.getElementById('theme-checkbox').checked = savedTheme === 'dark'; }
+        function toggleTheme() { const newTheme = document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light'; document.body.setAttribute('data-theme', newTheme); localStorage.setItem('theme', newTheme); }
         function updateTaskGoalOptions() { /* Logic for goals can be re-added here */ }
 
         // Make functions globally accessible for onclick handlers
-        window.handleEmailLogin = handleEmailLogin;
-        window.handleEmailSignup = handleEmailSignup;
-        window.handleGoogleLogin = handleGoogleLogin;
-        window.handleLogout = handleLogout;
-        window.showLogin = showLogin;
-        window.showSignup = showSignup;
-        window.addTask = addTask;
-        window.deleteTask = deleteTask;
-        window.toggleTask = toggleTask;
-        window.openEditModal = openEditModal;
-        window.closeEditModal = closeEditModal;
-        window.saveTaskChanges = saveTaskChanges;
-        window.filterTasks = filterTasks;
-        window.toggleTheme = toggleTheme;
-        window.handleAIGoalBreakdown = handleAIGoalBreakdown;
+        window.handleEmailLogin = handleEmailLogin; window.handleEmailSignup = handleEmailSignup; window.handleGoogleLogin = handleGoogleLogin; window.handleLogout = handleLogout; window.showLogin = showLogin; window.showSignup = showSignup; window.addTask = addTask; window.deleteTask = deleteTask; window.toggleTask = toggleTask; window.openEditModal = openEditModal; window.closeEditModal = closeEditModal; window.saveTaskChanges = saveTaskChanges; window.filterTasks = filterTasks; window.toggleTheme = toggleTheme; window.handleAIGoalBreakdown = handleAIGoalBreakdown;
 
     </script>
 </body>
