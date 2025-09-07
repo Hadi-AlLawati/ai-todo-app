@@ -200,24 +200,20 @@
             
             <!-- Analytics View -->
             <div id="analytics-view" class="hidden">
-                 <div class="bg-white rounded-2xl shadow-lg p-6 card">
-                    <div id="analytics-prompt" class="text-center py-8">
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Analytics Dashboard</h2>
-                        <p class="text-gray-600 mb-6">Generate a report to see your weekly todo summary and long-term habit streaks.</p>
-                        <button id="generate-report-btn" class="px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-sm hover:bg-blue-600 transition-colors">
-                            Generate Report
-                        </button>
+                 <div class="bg-white rounded-2xl shadow-lg p-6 card space-y-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Weekly Todo Summary</h2>
+                        <canvas id="todo-chart"></canvas>
                     </div>
-
-                    <div id="analytics-content-wrapper" class="hidden space-y-6">
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Weekly Todo Summary</h2>
-                            <canvas id="todo-chart"></canvas>
+                    <div id="streaks-container">
+                        <div id="analytics-prompt" class="text-center py-8 border-t">
+                             <h2 class="text-2xl font-bold text-gray-800 mb-4">Habit Streaks</h2>
+                             <p class="text-gray-600 mb-6">Generate a report to see your long-term habit streaks.</p>
+                             <button id="generate-report-btn" class="px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-sm hover:bg-blue-600 transition-colors">
+                                Generate Streaks Report
+                            </button>
                         </div>
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Habit Streaks</h2>
-                            <div id="streaks-content" class="space-y-3"></div>
-                        </div>
+                        <div id="streaks-content" class="hidden space-y-3"></div>
                     </div>
                 </div>
             </div>
@@ -607,12 +603,13 @@
                 views[v].classList.toggle('hidden', !is_active);
                 viewButtons[v].classList.toggle('active', is_active);
             });
-            weekNavControls.classList.toggle('hidden', view === 'settings');
+            weekNavControls.classList.toggle('hidden', view !== 'tracker' && view !== 'log');
 
             if (view === 'log') renderHourlyLog();
             if (view === 'analytics') {
+                renderWeeklyTodoChart(); // RENDER CHART IMMEDIATELY
                 analyticsPrompt.classList.remove('hidden');
-                analyticsContentWrapper.classList.add('hidden');
+                document.getElementById('streaks-content').classList.add('hidden');
             }
             if (view === 'settings') renderSettings();
         }
@@ -623,6 +620,7 @@
                 renderDayNavigation();
                 renderContentForDay();
             } else if (currentView === 'log') {
+                renderDayNavigation();
                 renderHourlyLog();
             }
             addAppEventListeners();
@@ -664,15 +662,9 @@
         }
         
         // --- Analytics Rendering ---
-        async function renderAnalytics() {
-            analyticsPrompt.classList.add('hidden');
-            analyticsContentWrapper.classList.remove('hidden');
-
-            const streaksContent = document.getElementById('streaks-content');
-            streaksContent.innerHTML = 'Calculating...';
-
-            // Use currently loaded week data for weekly chart
-            const weeklyTodoHistory = calculateWeeklyTodoStats(habitData);
+        
+        function renderWeeklyTodoChart() {
+             const weeklyTodoHistory = calculateWeeklyTodoStats(habitData);
             const ctx = document.getElementById('todo-chart').getContext('2d');
             if(todoChartInstance) {
                 todoChartInstance.destroy();
@@ -705,8 +697,13 @@
                     }
                 }
             });
-            
-            // Fetch all data for streaks
+        }
+
+        async function renderStreaksReport() {
+            const streaksContent = document.getElementById('streaks-content');
+            streaksContent.innerHTML = 'Calculating...';
+            streaksContent.classList.remove('hidden');
+
             const habitHistory = await fetchAllYearData();
             if(Object.keys(habitHistory).length === 0) {
                  streaksContent.innerHTML = '<p>Not enough data to calculate streaks. Keep tracking your habits!</p>';
@@ -998,9 +995,10 @@
             generateReportBtn.textContent = 'Generating...';
             generateReportBtn.disabled = true;
 
-            await renderAnalytics();
+            await renderStreaksReport();
+            analyticsPrompt.classList.add('hidden');
 
-            generateReportBtn.textContent = 'Generate Report';
+            generateReportBtn.textContent = 'Generate Streaks Report';
             generateReportBtn.disabled = false;
         });
 
@@ -1219,22 +1217,54 @@
                      const key = habit.id;
                      if (!habitData[key]) { habitData[key] = habit.type === 'checkbox' ? Array(7).fill(false) : Array(7).fill(""); }
                      const habitState = habitData[key][dayIndex];
+                     const failureReason = (habitData.failureLog && habitData.failureLog[key] && habitData.failureLog[key][dayIndex]) || "";
                      
                      html += `<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <label class="font-medium text-gray-700">${habit.name}</label>`;
+                        <label class="font-medium text-gray-700">${habit.name}</label>
+                        <div class="flex items-center space-x-2">`;
+
+                    if (!habitState && habit.type !== 'select') {
+                        html += `<button data-key="${key}" data-day="${dayIndex}" class="log-failure-btn text-xs ${failureReason ? 'text-yellow-600' : 'text-gray-500'} hover:underline">${failureReason ? 'View Reason' : 'Log Failure'}</button>`;
+                    }
 
                      if (habit.type === 'checkbox') {
                          html += `<input type="checkbox" data-key="${key}" data-day="${dayIndex}" class="h-6 w-6 rounded border-gray-300 text-green-500 focus:ring-green-400 cursor-pointer habit-input" ${habitState ? 'checked' : ''}>`;
                      } else if (habit.type === 'select') {
                          html += `<select data-key="${key}" data-day="${dayIndex}" class="custom-select rounded-md border-gray-300 shadow-sm focus:border-green-400 focus:ring focus:ring-green-300 focus:ring-opacity-50 text-sm py-1.5 w-40 habit-input">${(habit.options || []).map(opt => `<option value="${opt}" ${opt === (habitState || "") ? 'selected' : ''}>${opt || 'Select'}</option>`).join('')}</select>`;
                      }
-                     html += `</div>`;
+                     html += `</div></div>`;
                 });
                 html += `</div></div>`;
             });
 
             html += '</div></div>';
             return html;
+        }
+        
+        function renderHourlyLog() {
+            const logDate = new Date(displayedDate);
+            logDate.setDate(logDate.getDate() - (logDate.getDay() - activeDayIndex));
+            document.getElementById('hourly-log-date').textContent = logDate.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            
+            const contentDiv = document.getElementById('hourly-log-content');
+            let html = '';
+            
+            if(!habitData.hourlyLog || !habitData.hourlyLog[activeDayIndex]) {
+                 if(!habitData.hourlyLog) habitData.hourlyLog = {};
+                 habitData.hourlyLog[activeDayIndex] = Array(24).fill("");
+            }
+            const dayLog = habitData.hourlyLog[activeDayIndex];
+
+            for (let i = 0; i < 24; i++) {
+                const time = `${String(i).padStart(2, '0')}:00`;
+                html += `
+                    <div class="grid grid-cols-4 gap-2 items-center">
+                        <label class="text-sm font-medium text-gray-500 text-right">${time}</label>
+                        <textarea data-hour="${i}" data-day="${activeDayIndex}" class="hourly-log-entry col-span-3 w-full p-1 border border-gray-200 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm" rows="1">${dayLog[i] || ""}</textarea>
+                    </div>
+                `;
+            }
+            contentDiv.innerHTML = html;
         }
 
         function renderDayJournal(dayIndex) {
@@ -1282,17 +1312,18 @@
         // --- Event Handling ---
         function addAppEventListeners() {
             appContent.addEventListener('click', (e) => {
-                if (e.target && e.target.id === 'refresh-dashboard-btn') {
-                    const weatherDiv = document.getElementById('weather-content');
-                    const newsDiv = document.getElementById('news-content');
-                    const prayerDiv = document.getElementById('prayer-content');
-                    const historyDiv = document.getElementById('history-content');
-                    if(weatherDiv) weatherDiv.innerHTML = 'Refreshing...';
-                    if(newsDiv) newsDiv.innerHTML = 'Refreshing...';
-                    if(prayerDiv) prayerDiv.innerHTML = 'Refreshing...';
-                    if(historyDiv) historyDiv.innerHTML = 'Refreshing...';
-                    fetchDashboardData(true);
+                if (e.target.classList.contains('log-failure-btn')) {
+                    openFailureLogModal(e.target.dataset.key, e.target.dataset.day);
                 }
+            });
+            views.log.addEventListener('input', (e) => {
+                 if (e.target.classList.contains('hourly-log-entry')) {
+                    const { hour, day } = e.target.dataset;
+                    if(!habitData.hourlyLog) habitData.hourlyLog = {};
+                    if(!habitData.hourlyLog[day]) habitData.hourlyLog[day] = Array(24).fill("");
+                    habitData.hourlyLog[day][hour] = e.target.value;
+                    setTimeout(updateFirestore, 1000); // Debounce
+                 }
             });
 
             // Habit inputs
@@ -1300,8 +1331,10 @@
                 el.addEventListener('change', (e) => {
                     const { key, day } = e.target.dataset;
                     const dayIndex = parseInt(day);
-                    const previousState = habitData[key][dayIndex];
-
+                    const previousState = habitData[key] ? habitData[key][dayIndex] : undefined;
+                     if (!habitData[key]) {
+                        habitData[key] = el.type === 'checkbox' ? Array(7).fill(false) : Array(7).fill("");
+                    }
                     if (e.target.type === 'checkbox') {
                         habitData[key][dayIndex] = e.target.checked;
                          if (e.target.checked && !previousState) {
@@ -1321,7 +1354,8 @@
                             incrementScore(-10);
                          }
                     }
-                    
+                    renderDayHabits(activeDayIndex);
+                    addAppEventListeners();
                     updateFirestore();
                     updateProgress();
                 });
@@ -1372,6 +1406,41 @@
             });
         }
         
+        // Failure Log Modal
+        function openFailureLogModal(habitId, dayIndex) {
+            failureLogForm.reset();
+            document.getElementById('failure-habit-id').value = habitId;
+            document.getElementById('failure-day-index').value = dayIndex;
+            const reason = (habitData.failureLog && habitData.failureLog[habitId] && habitData.failureLog[habitId][dayIndex]) || "";
+            document.getElementById('failure-reason').value = reason;
+            failureLogModal.classList.remove('hidden');
+        }
+
+        function closeFailureLogModal() {
+            failureLogModal.classList.add('hidden');
+        }
+
+        async function saveFailureLog(e) {
+            e.preventDefault();
+            const habitId = document.getElementById('failure-habit-id').value;
+            const dayIndex = document.getElementById('failure-day-index').value;
+            const reason = document.getElementById('failure-reason').value;
+
+            if(!habitData.failureLog) habitData.failureLog = {};
+            if(!habitData.failureLog[habitId]) habitData.failureLog[habitId] = Array(7).fill("");
+            
+            habitData.failureLog[habitId][dayIndex] = reason;
+
+            await updateFirestore();
+            closeFailureLogModal();
+            renderDayHabits(activeDayIndex);
+            addAppEventListeners();
+        }
+        
+        cancelFailureLogBtn.addEventListener('click', closeFailureLogModal);
+        failureLogForm.addEventListener('submit', saveFailureLog);
+
+
         function updateProgress() {
             let totalTasks = 0, completedTasks = 0;
             for (const category in userHabitConfig) {
@@ -1416,4 +1485,3 @@
     </script>
 </body>
 </html>
-
