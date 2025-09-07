@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Habit Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f6;
+        }
+        .progress-bar-container {
+            background-color: #e0e0e0;
+            border-radius: 9999px;
+            height: 100%;
+        }
+        .progress-bar {
+            background-color: #4ade80; /* green-400 */
+            border-radius: 9999px;
+            transition: width 0.3s ease-in-out;
+            height: 100%;
+        }
+        .custom-select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>');
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="antialiased text-gray-800">
+
+    <div id="loading-overlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm flex justify-center items-center z-50">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-900">Daily Discipline Tracker</h1>
+            <p class="text-md text-gray-600 mt-2" id="current-week">Your journey to consistency starts now.</p>
+            <div class="flex justify-center items-center space-x-4 mt-4">
+                <button id="prev-week-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg shadow-sm hover:bg-gray-300 transition-colors">&larr; Prev Week</button>
+                <button id="today-btn" class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-sm hover:bg-blue-600 transition-colors">Go to Today</button>
+                <button id="next-week-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg shadow-sm hover:bg-gray-300 transition-colors">Next Week &rarr;</button>
+            </div>
+        </header>
+
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-bold mb-2">Weekly Progress</h2>
+            <div class="w-full h-4 bg-gray-200 rounded-full">
+                <div id="total-progress-bar" class="h-full text-center text-xs text-white bg-green-500 rounded-full transition-all duration-500" style="width: 0%;"></div>
+            </div>
+            <p id="total-progress-text" class="text-center text-sm font-medium text-gray-600 mt-2">0% Complete</p>
+        </div>
+
+        <div id="habit-tracker" class="space-y-6">
+            <!-- Habit sections will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Firebase Configuration ---
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "FIREBASE_API_KEY_PLACEHOLDER", authDomain: "FIREBASE_AUTH_DOMAIN_PLACEHOLDER", projectId: "FIREBASE_PROJECT_ID_PLACEHOLDER" };
+        const appId = typeof __app_id !== "FIREBASE_APP_ID_PLACEHOLDER" ? __app_id : 'default-habit-tracker';
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let userId = null;
+        let habitData = {};
+        let unsubscribe = null; // To store the onSnapshot listener
+        let displayedDate = new Date(); // State for the currently viewed date
+
+        // --- Habit Definitions ---
+        const habits = {
+            "Health": [
+                { name: "Body", type: "checkbox" },
+                { name: "Face", type: "checkbox" },
+                { name: "Ears", type: "checkbox" },
+                { name: "Teeth", type: "checkbox" },
+                { name: "Smell", type: "checkbox" },
+                { name: "Calories (>3000)", type: "checkbox" },
+                { name: "Stretch", type: "checkbox" },
+                { name: "Sleep (7-8 hours)", type: "checkbox" },
+                { name: "Hydration", type: "checkbox" },
+                { name: "Physical Activity", type: "select", options: ["", "Muscle", "Padel", "Running", "Tennis"] },
+            ],
+            "Mind": [
+                { name: "Investments Learning", type: "select", options: ["", "Crypto", "Stock", "News"] },
+                { name: "CFA Learning", type: "checkbox" },
+                { name: "Padel Learning", type: "checkbox" },
+                { name: "Tennis Learning", type: "checkbox" },
+                { name: "Journal Entries", type: "checkbox" },
+                { name: "Discipline", type: "checkbox" },
+                { name: "Talk to one person", type: "checkbox" },
+                { name: "Family time (30min)", type: "checkbox" },
+                { name: "Daily Planning/Review", type: "checkbox" },
+                { name: "Tidying Up", type: "checkbox" },
+            ],
+            "Spirit": [
+                { name: "Affirmations", type: "checkbox" },
+                { name: "Prayer", type: "checkbox" },
+                { name: "Quran", type: "checkbox" },
+                { name: "Dua", type: "checkbox" },
+                { name: "Charity", type: "checkbox" },
+            ],
+            "Budget": [
+                 { name: "Spend < 6.67 OMR", type: "checkbox" },
+            ],
+            "Weekly": [
+                { name: "Family Outing (Restaurant/Movie)", type: "checkbox" },
+                { name: "Extended Family Gathering", type: "checkbox" },
+            ]
+        };
+        const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+        // --- Date & Week Logic ---
+        function getWeekNumber(d) {
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            return [d.getUTCFullYear(), weekNo];
+        }
+
+        function updateViewForDate() {
+            const [year, week] = getWeekNumber(displayedDate);
+            const weekId = `${year}-W${String(week).padStart(2, '0')}`;
+            document.getElementById('current-week').textContent = `Week ${week}, ${year}`;
+
+            // Disable next week button if viewing the current week or a future week
+            const nextWeekBtn = document.getElementById('next-week-btn');
+            const today = new Date();
+            const [currentYear, currentWeek] = getWeekNumber(today);
+            if (year > currentYear || (year === currentYear && week >= currentWeek)) {
+                nextWeekBtn.disabled = true;
+                nextWeekBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                nextWeekBtn.disabled = false;
+                nextWeekBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+            
+            if (userId) {
+                setupTracker(weekId);
+            }
+        }
+
+        function navigateWeeks(offset) {
+            displayedDate.setDate(displayedDate.getDate() + (offset * 7));
+            updateViewForDate();
+        }
+        
+        // --- Authentication ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                updateViewForDate();
+            } else {
+                console.log("No user signed in.");
+            }
+        });
+
+        async function initializeAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Authentication Error:", error);
+                document.getElementById('loading-overlay').innerHTML = `<p class="text-red-500">Authentication failed. Please refresh.</p>`;
+            }
+        }
+
+        // --- Firestore ---
+        async function setupTracker(weekId) {
+            const docRef = doc(db, `artifacts/${appId}/users/${userId}/habits`, weekId);
+            
+            if (unsubscribe) unsubscribe(); 
+
+            unsubscribe = onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    habitData = docSnap.data();
+                } else {
+                    habitData = initializeEmptyHabitData();
+                    setDoc(docRef, habitData);
+                }
+                renderHabitTracker();
+                document.getElementById('loading-overlay').style.display = 'none';
+            }, (error) => {
+                console.error("Error fetching document:", error);
+                 document.getElementById('loading-overlay').innerHTML = `<p class="text-red-500">Error loading data. Please check console.</p>`;
+            });
+        }
+        
+        function initializeEmptyHabitData() {
+            const data = {};
+            for (const category in habits) {
+                habits[category].forEach(habit => {
+                    const key = `${category}-${habit.name}`;
+                    if (habit.type === 'checkbox') {
+                        data[key] = Array(7).fill(false);
+                    } else if (habit.type === 'select') {
+                         data[key] = Array(7).fill("");
+                    }
+                });
+            }
+            return data;
+        }
+
+        async function updateFirestore() {
+             if (!userId) return;
+             const [year, week] = getWeekNumber(displayedDate);
+             const weekId = `${year}-W${String(week).padStart(2, '0')}`;
+             const docRef = doc(db, `artifacts/${appId}/users/${userId}/habits`, weekId);
+             try {
+                await setDoc(docRef, habitData, { merge: true });
+             } catch (error) {
+                console.error("Error updating Firestore: ", error);
+             }
+        }
+
+
+        // --- Rendering Logic ---
+        function renderHabitTracker() {
+            const container = document.getElementById('habit-tracker');
+            container.innerHTML = '';
+
+            for (const category in habits) {
+                const categoryConfig = habits[category];
+                const isWeekly = category === 'Weekly';
+                
+                let categoryHtml = `
+                    <div class="bg-white rounded-2xl shadow-lg p-6">
+                        <h3 class="text-2xl font-bold mb-4 text-gray-800">${category}</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full min-w-[600px] border-collapse">
+                                <thead>
+                                    <tr class="border-b border-gray-200">
+                                        <th class="p-3 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Habit</th>
+                                        ${ isWeekly 
+                                            ? `<th class="p-3 text-center text-sm font-semibold text-gray-500 uppercase tracking-wider">Done?</th>`
+                                            : days.map(day => `<th class="p-3 text-center text-sm font-semibold text-gray-500 uppercase tracking-wider">${day}</th>`).join('')
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                `;
+
+                categoryConfig.forEach(habit => {
+                    const key = `${category}-${habit.name}`;
+                    if (!habitData[key]) {
+                        if (habit.type === 'checkbox') habitData[key] = Array(7).fill(false);
+                        if (habit.type === 'select') habitData[key] = Array(7).fill("");
+                    }
+                    const habitState = habitData[key] || [];
+
+                    categoryHtml += `<tr class="border-b border-gray-100 last:border-b-0">
+                        <td class="p-3 font-medium text-gray-700">${habit.name}</td>`;
+
+                    if (isWeekly) {
+                        const isChecked = habitState[0];
+                        categoryHtml += `
+                            <td class="p-3 text-center">
+                                <input type="checkbox" data-key="${key}" data-day="0" class="h-6 w-6 rounded border-gray-300 text-green-500 focus:ring-green-400 cursor-pointer" ${isChecked ? 'checked' : ''}>
+                            </td>`;
+                    } else {
+                        days.forEach((day, i) => {
+                            if (habit.type === 'checkbox') {
+                                const isChecked = habitState[i];
+                                categoryHtml += `
+                                    <td class="p-3 text-center">
+                                        <input type="checkbox" data-key="${key}" data-day="${i}" class="h-6 w-6 rounded border-gray-300 text-green-500 focus:ring-green-400 cursor-pointer" ${isChecked ? 'checked' : ''}>
+                                    </td>`;
+                            } else if (habit.type === 'select') {
+                                const selectedValue = habitState[i] || "";
+                                categoryHtml += `<td class="p-3 text-center">
+                                    <select data-key="${key}" data-day="${i}" class="custom-select rounded-md border-gray-300 shadow-sm focus:border-green-400 focus:ring focus:ring-green-300 focus:ring-opacity-50 text-sm py-1.5 w-full">
+                                        ${habit.options.map(opt => `<option value="${opt}" ${opt === selectedValue ? 'selected' : ''}>${opt || 'Select'}</option>`).join('')}
+                                    </select>
+                                </td>`;
+                            }
+                        });
+                    }
+                    categoryHtml += `</tr>`;
+                });
+
+                categoryHtml += `</tbody></table></div></div>`;
+                container.innerHTML += categoryHtml;
+            }
+            addEventListeners();
+            updateProgress();
+        }
+
+        // --- Event Handling & Progress Update ---
+        function addEventListeners() {
+            document.querySelectorAll('#habit-tracker input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const { key, day } = e.target.dataset;
+                    habitData[key][parseInt(day)] = e.target.checked;
+                    updateFirestore();
+                    updateProgress();
+                });
+            });
+            document.querySelectorAll('#habit-tracker select').forEach(select => {
+                select.addEventListener('change', (e) => {
+                     const { key, day } = e.target.dataset;
+                     habitData[key][parseInt(day)] = e.target.value;
+                     updateFirestore();
+                     updateProgress();
+                });
+            });
+        }
+        
+        function updateProgress() {
+            let totalTasks = 0;
+            let completedTasks = 0;
+
+            for (const category in habits) {
+                const isWeekly = category === 'Weekly';
+                habits[category].forEach(habit => {
+                    const key = `${category}-${habit.name}`;
+                    const habitState = habitData[key];
+                    if (!habitState) return;
+
+                    if (isWeekly) {
+                         totalTasks += 1;
+                         if(habitState[0]) completedTasks++;
+                    } else {
+                        totalTasks += 7;
+                        if(habit.type === 'checkbox') {
+                            completedTasks += habitState.filter(Boolean).length;
+                        } else if (habit.type === 'select') {
+                            completedTasks += habitState.filter(val => val && val !== "").length;
+                        }
+                    }
+                });
+            }
+            
+            const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            
+            const progressBar = document.getElementById('total-progress-bar');
+            const progressText = document.getElementById('total-progress-text');
+            
+            progressBar.style.width = `${percentage}%`;
+            progressText.textContent = `${percentage}% Complete - Great work!`;
+        }
+
+        // --- Initial Load ---
+        document.getElementById('prev-week-btn').addEventListener('click', () => navigateWeeks(-1));
+        document.getElementById('next-week-btn').addEventListener('click', () => navigateWeeks(1));
+        document.getElementById('today-btn').addEventListener('click', () => {
+            if (getWeekNumber(displayedDate).join('-') !== getWeekNumber(new Date()).join('-')) {
+                displayedDate = new Date();
+                updateViewForDate();
+            }
+        });
+        
+        initializeAuth();
+    </script>
+</body>
+</html>
