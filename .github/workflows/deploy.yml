@@ -22,7 +22,7 @@ jobs:
       - name: Setup Build Directory
         run: |
           mkdir ./build
-          cp ./habit_tracker.html ./build/index.html
+          cp ./Tracker.html ./build/index.html
           # This file disables the Jekyll build process on GitHub Pages.
           touch ./build/.nojekyll
 
