@@ -82,8 +82,16 @@
         import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase Configuration ---
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "FIREBASE_API_KEY_PLACEHOLDER", authDomain: "FIREBASE_AUTH_DOMAIN_PLACEHOLDER", projectId: "FIREBASE_PROJECT_ID_PLACEHOLDER" };
-        const appId = typeof __app_id !== "FIREBASE_APP_ID_PLACEHOLDER" ? __app_id : 'default-habit-tracker';
+        // IMPORTANT: Replace this with your own Firebase project configuration!
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'habit-tracker-live';
         
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -151,7 +159,6 @@
             const weekId = `${year}-W${String(week).padStart(2, '0')}`;
             document.getElementById('current-week').textContent = `Week ${week}, ${year}`;
 
-            // Disable next week button if viewing the current week or a future week
             const nextWeekBtn = document.getElementById('next-week-btn');
             const today = new Date();
             const [currentYear, currentWeek] = getWeekNumber(today);
@@ -179,22 +186,10 @@
                 userId = user.uid;
                 updateViewForDate();
             } else {
-                console.log("No user signed in.");
+                console.log("No user signed in. Attempting anonymous sign in.");
+                signInAnonymously(auth).catch(error => console.error("Anonymous sign in failed:", error));
             }
         });
-
-        async function initializeAuth() {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                console.error("Authentication Error:", error);
-                document.getElementById('loading-overlay').innerHTML = `<p class="text-red-500">Authentication failed. Please refresh.</p>`;
-            }
-        }
 
         // --- Firestore ---
         async function setupTracker(weekId) {
@@ -379,8 +374,7 @@
                 updateViewForDate();
             }
         });
-        
-        initializeAuth();
     </script>
 </body>
 </html>
+
