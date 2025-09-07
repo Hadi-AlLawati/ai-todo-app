@@ -443,7 +443,7 @@
                 setupViewNavigation();
 
             } else {
-                authContainer.classList.add('hidden');
+                authContainer.classList.remove('hidden');
                 mainAppContainer.classList.add('hidden');
                 if (unsubscribe) unsubscribe();
                 userId = null;
@@ -646,9 +646,9 @@
 
             if (view === 'log') renderHourlyLog();
             if (view === 'analytics') {
-                renderWeeklyTodoChart(); // RENDER CHART IMMEDIATELY
                 analyticsPrompt.classList.remove('hidden');
                 document.getElementById('streaks-content').classList.add('hidden');
+                 renderWeeklyTodoChart();
             }
             if (view === 'settings') renderSettings();
         }
@@ -695,8 +695,16 @@
                 <div class="card" style="animation-delay: 300ms;">${renderDayHabits(activeDayIndex)}</div>
             `;
             appContent.innerHTML = html;
-            if (isCurrentDay) {
-                fetchDashboardData();
+             if (isCurrentDay) {
+                try {
+                    fetchDashboardData();
+                } catch (error) {
+                    console.error("Dashboard failed to load:", error);
+                    const dashboardEl = document.getElementById('dashboard');
+                    if (dashboardEl) {
+                        dashboardEl.innerHTML = `<p class="text-red-500 text-center">Could not load dashboard widgets.</p>`;
+                    }
+                }
             }
         }
         
