@@ -150,7 +150,7 @@
         // --- Firebase Configuration ---
         const firebaseConfig = {
             apiKey: "FIREBASE_API_KEY_PLACEHOLDER",
-            authDomain: "FIREBASE_AUTH_DOMAIN_PLACEHOLDER", 
+            authDomain: "FIREBASE_AUTH_DOMAIN_PLACEHOLDER",
             projectId: "FIREBASE_PROJECT_ID_PLACEHOLDER",
             storageBucket: "FIREBASE_STORAGE_BUCKET_PLACEHOLDER",
             messagingSenderId: "FIREBASE_MESSAGING_SENDER_ID_PLACEHOLDER",
@@ -207,7 +207,6 @@
                 userEmailDisplay.textContent = `Signed in as: ${user.email}`;
                 setActiveDayForCurrentWeek();
                 updateViewForDate();
-                fetchDashboardData();
             } else {
                 authContainer.classList.remove('hidden');
                 trackerContainer.classList.add('hidden');
@@ -361,6 +360,9 @@
                 ${renderDayHabits(activeDayIndex)}
             `;
             appContent.innerHTML = html;
+            if (isCurrentDay) {
+                fetchDashboardData();
+            }
         }
 
         // --- Dashboard, News & Weather ---
@@ -458,7 +460,7 @@
 
             const getNews = async () => {
                 const newsApiKey = "YOUR_NEWSDATA_API_KEY";
-                if (newsApiKey === "YOUR_NEWSDATA_API_KEY") {
+                if (newsApiKey === "YOUR_NEWSDATA_API_KEY" || !newsApiKey) {
                     return { error: true, apiKeyMissing: true };
                 }
                 try {
