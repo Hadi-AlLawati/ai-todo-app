@@ -36,6 +36,11 @@
         .todo-item span {
             word-break: break-word;
         }
+        .nav-btn.active {
+            border-color: #3b82f6; /* blue-500 */
+            color: #1e40af; /* blue-800 */
+            font-weight: 600;
+        }
     </style>
 </head>
 <body class="antialiased text-gray-800">
@@ -110,7 +115,7 @@
                  <p id="user-email" class="text-sm text-gray-500 mt-4"></p>
             </header>
 
-            <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
                 <h2 class="text-xl font-bold mb-2">Weekly Progress</h2>
                 <div class="w-full h-4 bg-gray-200 rounded-full">
                     <div id="total-progress-bar" class="h-full text-center text-xs text-white bg-green-500 rounded-full transition-all duration-500" style="width: 0%;"></div>
@@ -118,8 +123,17 @@
                 <p id="total-progress-text" class="text-center text-sm font-medium text-gray-600 mt-2">0% Complete</p>
             </div>
 
-            <div id="app-content" class="space-y-6">
-                <!-- App sections will be dynamically inserted here -->
+            <!-- Navigation Tabs -->
+            <div class="flex justify-center border-b border-gray-200 mb-6">
+                <button id="nav-habits" class="nav-btn px-6 py-3 text-lg font-medium border-b-4">Habits</button>
+                <button id="nav-todos" class="nav-btn px-6 py-3 text-lg font-medium border-b-4">Todos</button>
+                <button id="nav-journal" class="nav-btn px-6 py-3 text-lg font-medium border-b-4">Journal</button>
+            </div>
+
+            <div id="app-content">
+                <div id="habits-section" class="space-y-6"></div>
+                <div id="todos-section" class="hidden"></div>
+                <div id="journal-section" class="hidden"></div>
             </div>
         </div>
     </div>
@@ -131,14 +145,13 @@
 
         // --- Firebase Configuration ---
         const firebaseConfig = {
-            apiKey: "FIREBASE_API_KEY_PLACEHOLDER",
-            authDomain: "FIREBASE_AUTH_DOMAIN_PLACEHOLDER", 
-            projectId: "FIREBASE_PROJECT_ID_PLACEHOLDER",
-            storageBucket: "FIREBASE_STORAGE_BUCKET_PLACEHOLDER",
-            messagingSenderId: "FIREBASE_MESSAGING_SENDER_ID_PLACEHOLDER",
-            appId: "FIREBASE_APP_ID_PLACEHOLDER"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
-
         const appId = 'habit-tracker-live';
         
         const app = initializeApp(firebaseConfig);
@@ -149,6 +162,7 @@
         let habitData = {};
         let unsubscribe = null;
         let displayedDate = new Date();
+        let activeView = 'habits'; // 'habits', 'todos', or 'journal'
 
         // --- DOM Elements ---
         const authContainer = document.getElementById('auth-container');
@@ -160,7 +174,16 @@
         const showSignupLink = document.getElementById('show-signup-link');
         const showLoginLink = document.getElementById('show-login-link');
         const signoutBtn = document.getElementById('signout-btn');
-        const appContentContainer = document.getElementById('app-content');
+        const navButtons = {
+            habits: document.getElementById('nav-habits'),
+            todos: document.getElementById('nav-todos'),
+            journal: document.getElementById('nav-journal')
+        };
+        const sections = {
+            habits: document.getElementById('habits-section'),
+            todos: document.getElementById('todos-section'),
+            journal: document.getElementById('journal-section')
+        };
 
 
         // --- Habit Definitions ---
@@ -188,6 +211,7 @@
                 userId = user.uid;
                 userEmailDisplay.textContent = `Signed in as: ${user.email}`;
                 updateViewForDate();
+                setupNav();
             } else {
                 authContainer.classList.remove('hidden');
                 trackerContainer.classList.add('hidden');
@@ -289,15 +313,35 @@
              catch (error) { console.error("Error updating Firestore: ", error); }
         }
 
+        // --- Navigation ---
+        function setupNav() {
+            Object.keys(navButtons).forEach(view => {
+                navButtons[view].addEventListener('click', () => {
+                    activeView = view;
+                    updateActiveView();
+                });
+            });
+            updateActiveView(); // Set initial view
+        }
+
+        function updateActiveView() {
+            Object.keys(sections).forEach(view => {
+                const is_active = view === activeView;
+                sections[view].classList.toggle('hidden', !is_active);
+                navButtons[view].classList.toggle('active', is_active);
+                navButtons[view].classList.toggle('text-gray-500', !is_active);
+            });
+        }
+        
         // --- Main Render Function ---
         function renderApp() {
-            appContentContainer.innerHTML = `
-                ${renderHabitTables()}
-                ${renderJournalSection()}
-                ${renderTodoSection()}
-            `;
+            sections.habits.innerHTML = renderHabitTables();
+            sections.todos.innerHTML = renderTodoSection();
+            sections.journal.innerHTML = renderJournalSection();
+            
             addAppEventListeners();
             updateProgress();
+            updateActiveView();
         }
 
         // --- Rendering Sections ---
@@ -386,7 +430,7 @@
         // --- Event Handling ---
         function addAppEventListeners() {
             // Habit inputs
-            appContentContainer.querySelectorAll('.habit-input').forEach(el => {
+            document.querySelectorAll('.habit-input').forEach(el => {
                 el.addEventListener('change', (e) => {
                     const { key, day } = e.target.dataset;
                     habitData[key][parseInt(day)] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -396,7 +440,7 @@
             });
             // Journal entries
             let journalTimeout;
-            appContentContainer.querySelectorAll('.journal-entry').forEach(el => {
+            document.querySelectorAll('.journal-entry').forEach(el => {
                 el.addEventListener('input', (e) => {
                     clearTimeout(journalTimeout);
                     const day = parseInt(e.target.dataset.day);
@@ -406,7 +450,7 @@
                 });
             });
             // Todo List interactions
-            appContentContainer.addEventListener('click', (e) => {
+            document.getElementById('app-content').addEventListener('click', (e) => {
                 const target = e.target;
                 if (target.classList.contains('add-todo-btn')) {
                     const day = parseInt(target.dataset.day);
@@ -416,21 +460,21 @@
                         if (!habitData.todos[day]) habitData.todos[day] = [];
                         habitData.todos[day].push({ text: input.value.trim(), completed: false });
                         input.value = '';
-                        document.getElementById(`todo-list-${day}`).innerHTML = renderSingleDayTodos(day);
+                        sections.todos.querySelector(`#todo-list-${day}`).innerHTML = renderSingleDayTodos(day);
                         updateFirestore();
                     }
                 } else if (target.classList.contains('delete-todo-btn')) {
                     const { day, index } = target.dataset;
                     habitData.todos[day].splice(index, 1);
-                    document.getElementById(`todo-list-${day}`).innerHTML = renderSingleDayTodos(day);
+                    sections.todos.querySelector(`#todo-list-${day}`).innerHTML = renderSingleDayTodos(day);
                     updateFirestore();
                 }
             });
-            appContentContainer.querySelectorAll('.todo-checkbox').forEach(el => {
+            document.querySelectorAll('.todo-checkbox').forEach(el => {
                 el.addEventListener('change', (e) => {
                     const { day, index } = e.target.dataset;
                     habitData.todos[day][index].completed = e.target.checked;
-                    document.getElementById(`todo-list-${day}`).innerHTML = renderSingleDayTodos(day);
+                    sections.todos.querySelector(`#todo-list-${day}`).innerHTML = renderSingleDayTodos(day);
                     updateFirestore();
                 });
             });
@@ -467,4 +511,3 @@
     </script>
 </body>
 </html>
-
