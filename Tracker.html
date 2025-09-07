@@ -36,8 +36,9 @@
         .todo-item span {
             word-break: break-word;
         }
-        .nav-btn.active {
+        .day-btn.active {
             border-color: #3b82f6; /* blue-500 */
+            background-color: #eff6ff; /* blue-50 */
             color: #1e40af; /* blue-800 */
             font-weight: 600;
         }
@@ -123,17 +124,13 @@
                 <p id="total-progress-text" class="text-center text-sm font-medium text-gray-600 mt-2">0% Complete</p>
             </div>
 
-            <!-- Navigation Tabs -->
-            <div class="flex justify-center border-b border-gray-200 mb-6">
-                <button id="nav-habits" class="nav-btn px-6 py-3 text-lg font-medium border-b-4">Habits</button>
-                <button id="nav-todos" class="nav-btn px-6 py-3 text-lg font-medium border-b-4">Todos</button>
-                <button id="nav-journal" class="nav-btn px-6 py-3 text-lg font-medium border-b-4">Journal</button>
+            <!-- Day Navigation Tabs -->
+            <div id="day-nav-container" class="grid grid-cols-4 sm:grid-cols-7 text-center border-b-2 border-gray-200 mb-6">
+                <!-- Day buttons will be inserted here -->
             </div>
 
-            <div id="app-content">
-                <div id="habits-section" class="space-y-6"></div>
-                <div id="todos-section" class="hidden"></div>
-                <div id="journal-section" class="hidden"></div>
+            <div id="app-content" class="space-y-6">
+                <!-- Day-specific content will be rendered here -->
             </div>
         </div>
     </div>
@@ -163,7 +160,7 @@
         let habitData = {};
         let unsubscribe = null;
         let displayedDate = new Date();
-        let activeView = 'habits'; // 'habits', 'todos', or 'journal'
+        let activeDayIndex = 0;
 
         // --- DOM Elements ---
         const authContainer = document.getElementById('auth-container');
@@ -175,17 +172,8 @@
         const showSignupLink = document.getElementById('show-signup-link');
         const showLoginLink = document.getElementById('show-login-link');
         const signoutBtn = document.getElementById('signout-btn');
-        const navButtons = {
-            habits: document.getElementById('nav-habits'),
-            todos: document.getElementById('nav-todos'),
-            journal: document.getElementById('nav-journal')
-        };
-        const sections = {
-            habits: document.getElementById('habits-section'),
-            todos: document.getElementById('todos-section'),
-            journal: document.getElementById('journal-section')
-        };
-
+        const dayNavContainer = document.getElementById('day-nav-container');
+        const appContent = document.getElementById('app-content');
 
         // --- Habit Definitions ---
         const habits = {
@@ -211,8 +199,8 @@
                 loadingOverlay.classList.remove('hidden');
                 userId = user.uid;
                 userEmailDisplay.textContent = `Signed in as: ${user.email}`;
+                setActiveDayForCurrentWeek();
                 updateViewForDate();
-                setupNav();
             } else {
                 authContainer.classList.remove('hidden');
                 trackerContainer.classList.add('hidden');
@@ -259,6 +247,17 @@
             return [d.getUTCFullYear(), weekNo];
         }
 
+        function setActiveDayForCurrentWeek() {
+             const today = new Date();
+             const [currentYear, currentWeek] = getWeekNumber(today);
+             const [displayYear, displayWeek] = getWeekNumber(displayedDate);
+             if (currentYear === displayYear && currentWeek === displayWeek) {
+                 activeDayIndex = (today.getDay() + 6) % 7; // Monday is 0
+             } else {
+                 activeDayIndex = 0; // Default to Monday for other weeks
+             }
+        }
+
         function updateViewForDate() {
             if (!userId) return;
             const [year, week] = getWeekNumber(displayedDate);
@@ -275,7 +274,11 @@
             setupTracker(weekId);
         }
 
-        function navigateWeeks(offset) { displayedDate.setDate(displayedDate.getDate() + (offset * 7)); updateViewForDate(); }
+        function navigateWeeks(offset) { 
+            displayedDate.setDate(displayedDate.getDate() + (offset * 7)); 
+            setActiveDayForCurrentWeek();
+            updateViewForDate(); 
+        }
         
         // --- Firestore ---
         async function setupTracker(weekId) {
@@ -314,116 +317,115 @@
              catch (error) { console.error("Error updating Firestore: ", error); }
         }
 
-        // --- Navigation ---
-        function setupNav() {
-            Object.keys(navButtons).forEach(view => {
-                navButtons[view].addEventListener('click', () => {
-                    activeView = view;
-                    updateActiveView();
-                });
-            });
-            updateActiveView(); // Set initial view
-        }
-
-        function updateActiveView() {
-            Object.keys(sections).forEach(view => {
-                const is_active = view === activeView;
-                sections[view].classList.toggle('hidden', !is_active);
-                navButtons[view].classList.toggle('active', is_active);
-                navButtons[view].classList.toggle('text-gray-500', !is_active);
-            });
-        }
-        
         // --- Main Render Function ---
         function renderApp() {
-            sections.habits.innerHTML = renderHabitTables();
-            sections.todos.innerHTML = renderTodoSection();
-            sections.journal.innerHTML = renderJournalSection();
-            
+            renderDayNavigation();
+            renderContentForDay();
             addAppEventListeners();
             updateProgress();
-            updateActiveView();
+        }
+        
+        function renderDayNavigation() {
+            dayNavContainer.innerHTML = '';
+            days.forEach((day, index) => {
+                const btn = document.createElement('button');
+                btn.textContent = day;
+                btn.className = `day-btn p-3 border-b-4 ${index === activeDayIndex ? 'active' : 'border-transparent text-gray-500 hover:border-gray-300'}`;
+                btn.addEventListener('click', () => {
+                    activeDayIndex = index;
+                    renderApp();
+                });
+                dayNavContainer.appendChild(btn);
+            });
+        }
+
+        function renderContentForDay() {
+            let html = `
+                ${renderWeeklySection()}
+                ${renderDayHabits(activeDayIndex)}
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    ${renderDayTodos(activeDayIndex)}
+                    ${renderDayJournal(activeDayIndex)}
+                </div>
+            `;
+            appContent.innerHTML = html;
         }
 
         // --- Rendering Sections ---
-        function renderHabitTables() {
-            let html = '';
-            for (const category in habits) {
-                const categoryConfig = habits[category];
-                const isWeekly = category === 'Weekly';
-                html += `<div class="bg-white rounded-2xl shadow-lg p-6">
-                    <h3 class="text-2xl font-bold mb-4 text-gray-800">${category}</h3>
-                    <div class="overflow-x-auto"><table class="w-full min-w-[600px] border-collapse">
-                        <thead><tr class="border-b border-gray-200">
-                            <th class="p-3 text-left text-sm font-semibold text-gray-500 uppercase tracking-wider">Habit</th>
-                            ${ isWeekly ? `<th class="p-3 text-center text-sm font-semibold text-gray-500 uppercase tracking-wider">Done?</th>` : days.map(day => `<th class="p-3 text-center text-sm font-semibold text-gray-500 uppercase tracking-wider">${day}</th>`).join('')}
-                        </tr></thead><tbody>`;
-                categoryConfig.forEach(habit => {
-                    const key = `${category}-${habit.name}`;
-                    if (!habitData[key]) { habitData[key] = habit.type === 'checkbox' ? Array(7).fill(false) : Array(7).fill(""); }
-                    const habitState = habitData[key];
-                    html += `<tr class="border-b border-gray-100 last:border-b-0"><td class="p-3 font-medium text-gray-700">${habit.name}</td>`;
-                    if (isWeekly) {
-                        html += `<td class="p-3 text-center"><input type="checkbox" data-key="${key}" data-day="0" class="h-6 w-6 rounded border-gray-300 text-green-500 focus:ring-green-400 cursor-pointer habit-input" ${habitState[0] ? 'checked' : ''}></td>`;
-                    } else {
-                        days.forEach((day, i) => {
-                            if (habit.type === 'checkbox') {
-                                html += `<td class="p-3 text-center"><input type="checkbox" data-key="${key}" data-day="${i}" class="h-6 w-6 rounded border-gray-300 text-green-500 focus:ring-green-400 cursor-pointer habit-input" ${habitState[i] ? 'checked' : ''}></td>`;
-                            } else if (habit.type === 'select') {
-                                html += `<td class="p-3 text-center"><select data-key="${key}" data-day="${i}" class="custom-select rounded-md border-gray-300 shadow-sm focus:border-green-400 focus:ring focus:ring-green-300 focus:ring-opacity-50 text-sm py-1.5 w-full habit-input">${habit.options.map(opt => `<option value="${opt}" ${opt === (habitState[i] || "") ? 'selected' : ''}>${opt || 'Select'}</option>`).join('')}</select></td>`;
-                            }
-                        });
-                    }
-                    html += `</tr>`;
+        function renderWeeklySection() {
+            let html = `<div class="bg-white rounded-2xl shadow-lg p-6">
+                <h3 class="text-2xl font-bold mb-4 text-gray-800">Weekly Tasks</h3>
+                <div class="space-y-3">`;
+            habits["Weekly"].forEach(habit => {
+                const key = `Weekly-${habit.name}`;
+                if (!habitData[key]) { habitData[key] = [false]; }
+                const isChecked = habitData[key][0];
+                html += `<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <label for="${key}" class="font-medium text-gray-700">${habit.name}</label>
+                    <input type="checkbox" id="${key}" data-key="${key}" data-day="0" class="h-6 w-6 rounded border-gray-300 text-green-500 focus:ring-green-400 cursor-pointer habit-input" ${isChecked ? 'checked' : ''}>
+                </div>`;
+            });
+            html += `</div></div>`;
+            return html;
+        }
+
+        function renderDayHabits(dayIndex) {
+            let html = '<div class="bg-white rounded-2xl shadow-lg p-6"><h3 class="text-2xl font-bold mb-4 text-gray-800">Daily Habits</h3><div class="space-y-4">';
+
+            Object.keys(habits).filter(c => c !== 'Weekly').forEach(category => {
+                html += `<div><h4 class="text-lg font-semibold text-gray-600 mb-2">${category}</h4><div class="space-y-3">`;
+                habits[category].forEach(habit => {
+                     const key = `${category}-${habit.name}`;
+                     if (!habitData[key]) { habitData[key] = habit.type === 'checkbox' ? Array(7).fill(false) : Array(7).fill(""); }
+                     const habitState = habitData[key][dayIndex];
+                     
+                     html += `<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <label class="font-medium text-gray-700">${habit.name}</label>`;
+
+                     if (habit.type === 'checkbox') {
+                         html += `<input type="checkbox" data-key="${key}" data-day="${dayIndex}" class="h-6 w-6 rounded border-gray-300 text-green-500 focus:ring-green-400 cursor-pointer habit-input" ${habitState ? 'checked' : ''}>`;
+                     } else if (habit.type === 'select') {
+                         html += `<select data-key="${key}" data-day="${dayIndex}" class="custom-select rounded-md border-gray-300 shadow-sm focus:border-green-400 focus:ring focus:ring-green-300 focus:ring-opacity-50 text-sm py-1.5 w-40 habit-input">${habit.options.map(opt => `<option value="${opt}" ${opt === (habitState || "") ? 'selected' : ''}>${opt || 'Select'}</option>`).join('')}</select>`;
+                     }
+                     html += `</div>`;
                 });
-                html += `</tbody></table></div></div>`;
-            }
+                html += `</div></div>`;
+            });
+
+            html += '</div></div>';
             return html;
         }
 
-        function renderJournalSection() {
-            const journalEntries = habitData.journal || Array(7).fill("");
-            let html = `<div class="bg-white rounded-2xl shadow-lg p-6">
-                <h3 class="text-2xl font-bold mb-4 text-gray-800">Daily Journal</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">`;
-            days.forEach((day, i) => {
-                html += `<div class="col-span-1">
-                    <label for="journal-day-${i}" class="font-semibold text-gray-600">${day}</label>
-                    <textarea id="journal-day-${i}" data-day="${i}" class="journal-entry mt-1 w-full h-32 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">${journalEntries[i]}</textarea>
-                </div>`;
-            });
-            html += `</div></div>`;
-            return html;
+        function renderDayJournal(dayIndex) {
+            const journalEntry = (habitData.journal && habitData.journal[dayIndex]) || "";
+            return `<div class="bg-white rounded-2xl shadow-lg p-6">
+                <h3 class="text-2xl font-bold mb-4 text-gray-800">Journal Entry</h3>
+                <textarea data-day="${dayIndex}" class="journal-entry w-full h-48 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">${journalEntry}</textarea>
+            </div>`;
         }
 
-        function renderTodoSection() {
-            let html = `<div class="bg-white rounded-2xl shadow-lg p-6">
-                <h3 class="text-2xl font-bold mb-4 text-gray-800">Daily Todo List</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">`;
-            days.forEach((day, i) => {
-                html += `<div class="bg-gray-50 p-3 rounded-lg flex flex-col">
-                    <h4 class="font-bold text-center text-gray-700 mb-2">${day}</h4>
-                    <ul id="todo-list-${i}" class="space-y-2 flex-grow min-h-[100px]">
-                        ${renderSingleDayTodos(i)}
-                    </ul>
-                    <div class="mt-2 flex space-x-2">
-                        <input type="text" id="todo-input-${i}" placeholder="New todo..." class="flex-grow w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
-                        <button data-day="${i}" class="add-todo-btn px-3 py-1 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 text-sm">Add</button>
-                    </div>
-                </div>`;
-            });
-            html += `</div></div>`;
+        function renderDayTodos(dayIndex) {
+            let html = `<div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col">
+                <h3 class="text-2xl font-bold mb-4 text-gray-800">Todo List</h3>
+                <ul id="todo-list" class="space-y-2 flex-grow min-h-[150px]">
+                    ${renderSingleDayTodos(dayIndex)}
+                </ul>
+                <div class="mt-4 flex space-x-2">
+                    <input type="text" id="todo-input" placeholder="New todo..." class="flex-grow w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+                    <button id="add-todo-btn" class="px-3 py-1 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 text-sm">Add</button>
+                </div>
+            </div>`;
             return html;
         }
 
         function renderSingleDayTodos(dayIndex) {
             const dayTodos = (habitData.todos && habitData.todos[dayIndex]) || [];
-            if (dayTodos.length === 0) return `<li class="text-xs text-gray-500 text-center italic">No tasks yet.</li>`;
+            if (dayTodos.length === 0) return `<li class="text-xs text-gray-500 text-center italic pt-4">No tasks for today.</li>`;
             return dayTodos.map((todo, todoIndex) => `
-                <li class="todo-item flex items-center justify-between bg-white p-2 rounded-md shadow-sm">
-                    <input type="checkbox" data-day="${dayIndex}" data-index="${todoIndex}" class="todo-checkbox h-4 w-4 rounded border-gray-300 text-blue-500 focus:ring-blue-400" ${todo.completed ? 'checked' : ''}>
+                <li class="todo-item flex items-center justify-between bg-gray-50 p-2 rounded-md">
+                    <input type="checkbox" data-index="${todoIndex}" class="todo-checkbox h-4 w-4 rounded border-gray-300 text-blue-500 focus:ring-blue-400" ${todo.completed ? 'checked' : ''}>
                     <span class="text-sm mx-2 flex-grow ${todo.completed ? 'line-through text-gray-400' : 'text-gray-700'}">${todo.text}</span>
-                    <button data-day="${dayIndex}" data-index="${todoIndex}" class="delete-todo-btn text-red-500 hover:text-red-700 font-bold">&times;</button>
+                    <button data-index="${todoIndex}" class="delete-todo-btn text-red-500 hover:text-red-700 font-bold">&times;</button>
                 </li>
             `).join('');
         }
@@ -431,7 +433,7 @@
         // --- Event Handling ---
         function addAppEventListeners() {
             // Habit inputs
-            document.querySelectorAll('.habit-input').forEach(el => {
+            appContent.querySelectorAll('.habit-input').forEach(el => {
                 el.addEventListener('change', (e) => {
                     const { key, day } = e.target.dataset;
                     habitData[key][parseInt(day)] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -439,43 +441,42 @@
                     updateProgress();
                 });
             });
-            // Journal entries
+            // Journal entry
             let journalTimeout;
-            document.querySelectorAll('.journal-entry').forEach(el => {
-                el.addEventListener('input', (e) => {
+            const journalEl = appContent.querySelector('.journal-entry');
+            if (journalEl) {
+                journalEl.addEventListener('input', (e) => {
                     clearTimeout(journalTimeout);
                     const day = parseInt(e.target.dataset.day);
                     if (!habitData.journal) habitData.journal = Array(7).fill("");
                     habitData.journal[day] = e.target.value;
-                    journalTimeout = setTimeout(updateFirestore, 500); // Debounce Firestore writes
+                    journalTimeout = setTimeout(updateFirestore, 500); // Debounce
                 });
-            });
+            }
             // Todo List interactions
-            document.getElementById('app-content').addEventListener('click', (e) => {
-                const target = e.target;
-                if (target.classList.contains('add-todo-btn')) {
-                    const day = parseInt(target.dataset.day);
-                    const input = document.getElementById(`todo-input-${day}`);
-                    if (input.value.trim()) {
+            const addTodoBtn = appContent.querySelector('#add-todo-btn');
+            if (addTodoBtn) {
+                addTodoBtn.addEventListener('click', () => {
+                    const input = appContent.querySelector('#todo-input');
+                    if (input && input.value.trim()) {
                         if (!habitData.todos) habitData.todos = { 0:[], 1:[], 2:[], 3:[], 4:[], 5:[], 6:[] };
-                        if (!habitData.todos[day]) habitData.todos[day] = [];
-                        habitData.todos[day].push({ text: input.value.trim(), completed: false });
+                        if (!habitData.todos[activeDayIndex]) habitData.todos[activeDayIndex] = [];
+                        habitData.todos[activeDayIndex].push({ text: input.value.trim(), completed: false });
                         input.value = '';
-                        sections.todos.querySelector(`#todo-list-${day}`).innerHTML = renderSingleDayTodos(day);
+                        appContent.querySelector('#todo-list').innerHTML = renderSingleDayTodos(activeDayIndex);
                         updateFirestore();
                     }
-                } else if (target.classList.contains('delete-todo-btn')) {
-                    const { day, index } = target.dataset;
-                    habitData.todos[day].splice(index, 1);
-                    sections.todos.querySelector(`#todo-list-${day}`).innerHTML = renderSingleDayTodos(day);
-                    updateFirestore();
-                }
-            });
-            document.querySelectorAll('.todo-checkbox').forEach(el => {
-                el.addEventListener('change', (e) => {
-                    const { day, index } = e.target.dataset;
-                    habitData.todos[day][index].completed = e.target.checked;
-                    sections.todos.querySelector(`#todo-list-${day}`).innerHTML = renderSingleDayTodos(day);
+                });
+            }
+            appContent.querySelectorAll('.todo-checkbox, .delete-todo-btn').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    if (e.target.classList.contains('todo-checkbox')) {
+                         habitData.todos[activeDayIndex][index].completed = e.target.checked;
+                    } else {
+                         habitData.todos[activeDayIndex].splice(index, 1);
+                    }
+                    appContent.querySelector('#todo-list').innerHTML = renderSingleDayTodos(activeDayIndex);
                     updateFirestore();
                 });
             });
@@ -504,12 +505,20 @@
         document.getElementById('prev-week-btn').addEventListener('click', () => navigateWeeks(-1));
         document.getElementById('next-week-btn').addEventListener('click', () => navigateWeeks(1));
         document.getElementById('today-btn').addEventListener('click', () => {
-            if (getWeekNumber(displayedDate).join('-') !== getWeekNumber(new Date()).join('-')) {
-                displayedDate = new Date();
+            const today = new Date();
+             if (getWeekNumber(displayedDate).join('-') !== getWeekNumber(today).join('-')) {
+                displayedDate = today;
+                setActiveDayForCurrentWeek();
                 updateViewForDate();
+            } else {
+                // If it's already the current week, just switch to the current day
+                const currentDayIndex = (today.getDay() + 6) % 7;
+                if (activeDayIndex !== currentDayIndex) {
+                    activeDayIndex = currentDayIndex;
+                    renderApp();
+                }
             }
         });
     </script>
 </body>
 </html>
-
