@@ -887,7 +887,7 @@
                     <h3 class="text-2xl font-bold text-gray-800">Today's Dashboard</h3>
                     <button id="refresh-dashboard-btn" class="px-3 py-1 bg-gray-200 text-gray-700 text-sm font-semibold rounded-lg shadow-sm hover:bg-gray-300 transition-colors">Refresh</button>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div id="weather-widget" class="bg-gray-50 p-4 rounded-lg flex items-center space-x-4">
                          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 9.168A6 6 0 0110 6a6 6 0 015.668 3.168A2 2 0 0114 13H6a2 2 0 01-1.668-3.832z" clip-rule="evenodd" /></svg>
                         <div id="weather-content">Loading weather...</div>
@@ -895,6 +895,14 @@
                     <div id="news-widget" class="bg-gray-50 p-4 rounded-lg flex items-center space-x-4">
                          <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-500" viewBox="0 0 20 20" fill="currentColor"><path d="M2 3a1 1 0 011-1h14a1 1 0 011 1v14a1 1 0 01-1 1H3a1 1 0 01-1-1V3z" /><path d="M5 7h10v2H5V7zm0 4h10v2H5v-2zm0 4h5v2H5v-2z" /></svg>
                         <div id="news-content" class="text-sm space-y-2 flex-grow">Loading news...</div>
+                    </div>
+                    <div id="prayer-widget" class="bg-gray-50 p-4 rounded-lg flex items-center space-x-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-500" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a.75.75 0 01.75.75v.512c3.54.341 6.25 3.28 6.25 6.738v3.25a.75.75 0 01-1.5 0v-3.25c0-2.89-2.298-5.25-5-5.25v-1.5a.75.75 0 01-.75-.75zM10 4a6 6 0 00-6 6v3.25a.75.75 0 01-1.5 0V10c0-3.458 2.71-6.397 6.25-6.738V2.75A.75.75 0 0110 2zM3 12a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" /></svg>
+                        <div id="prayer-content" class="text-sm space-y-1">Loading prayer times...</div>
+                    </div>
+                    <div id="history-widget" class="bg-gray-50 p-4 rounded-lg flex items-center space-x-4">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.415L11 9.586V6z" clip-rule="evenodd" /></svg>
+                        <div id="history-content" class="text-sm">Loading history...</div>
                     </div>
                 </div>
             </div>
@@ -930,6 +938,36 @@
                 newsDiv.textContent = (newsData && newsData.message) || 'Could not load news articles.';
             }
         }
+
+        function renderPrayerTimes(prayerData) {
+            const prayerDiv = document.getElementById('prayer-content');
+            if (!prayerDiv) return;
+            if (prayerData && !prayerData.error) {
+                const { Fajr, Dhuhr, Asr, Maghrib, Isha } = prayerData;
+                prayerDiv.innerHTML = `
+                    <div class="grid grid-cols-2 gap-x-2">
+                        <span class="font-semibold">Fajr:</span> <span>${Fajr}</span>
+                        <span class="font-semibold">Dhuhr:</span> <span>${Dhuhr}</span>
+                        <span class="font-semibold">Asr:</span> <span>${Asr}</span>
+                        <span class="font-semibold">Maghrib:</span> <span>${Maghrib}</span>
+                        <span class="font-semibold">Isha:</span> <span>${Isha}</span>
+                    </div>
+                `;
+            } else {
+                 prayerDiv.textContent = (prayerData && prayerData.message) || 'Could not load prayer times.';
+            }
+        }
+
+        function renderOnThisDay(historyData) {
+             const historyDiv = document.getElementById('history-content');
+            if (!historyDiv) return;
+            if (historyData && !historyData.error && historyData.events && historyData.events.length > 0) {
+                 const event = historyData.events[Math.floor(Math.random() * historyData.events.length)];
+                 historyDiv.innerHTML = `<p><span class="font-bold">${event.year}:</span> ${event.text}</p>`;
+            } else {
+                historyDiv.textContent = (historyData && historyData.message) || 'Could not load historical event.';
+            }
+        }
         
         async function fetchDashboardData(forceRefresh = false) {
             const currentDate = new Date().toISOString().split('T')[0];
@@ -941,6 +979,8 @@
                     if (cachedData && cachedData.date === currentDate) {
                         renderWeather(cachedData.weather);
                         renderNews(cachedData.news);
+                        renderPrayerTimes(cachedData.prayer);
+                        renderOnThisDay(cachedData.history);
                         return;
                     }
                 } catch (e) {
@@ -948,9 +988,47 @@
                 }
             }
             
-            const getWeather = () => new Promise((resolve) => {
-                if (!navigator.geolocation) {
-                    resolve({ error: true, message: "Geolocation is not supported by this browser." });
+            const getPrayerTimes = (lat, lon) => new Promise(async (resolve) => {
+                try {
+                    const date = new Date().toISOString().split('T')[0];
+                    const response = await fetch(`https://api.aladhan.com/v1/timings/${date}?latitude=${lat}&longitude=${lon}&method=4`);
+                    const data = await response.json();
+                    resolve(data.data.timings);
+                } catch (error) {
+                    console.error("Error fetching prayer times:", error);
+                    resolve({ error: true, message: 'Could not fetch prayer times.' });
+                }
+            });
+
+            const getOnThisDay = () => new Promise(async (resolve) => {
+                try {
+                    const today = new Date();
+                    const month = String(today.getMonth() + 1).padStart(2, '0');
+                    const day = String(today.getDate()).padStart(2, '0');
+                    const response = await fetch(`https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/${month}/${day}`);
+                    const data = await response.json();
+                    resolve({ events: data.events });
+                } catch (error) {
+                    console.error("Error fetching 'On This Day' data:", error);
+                     resolve({ error: true, message: "Could not fetch today's history." });
+                }
+            });
+
+            const getNews = () => new Promise(async (resolve) => {
+                const rssFeedUrl = encodeURIComponent("http://feeds.bbci.co.uk/news/world/rss.xml");
+                try {
+                    const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${rssFeedUrl}`);
+                    const data = await response.json();
+                    resolve(data.status === 'ok' ? { articles: data.items } : { error: true, message: 'Could not load news.' });
+                } catch (error) {
+                    console.error("Error fetching news:", error);
+                    resolve({ error: true, message: 'Could not fetch news.' });
+                }
+            });
+
+            const getWeatherAndLocation = () => new Promise((resolve) => {
+                 if (!navigator.geolocation) {
+                    resolve({ weather: { error: true, message: "Geolocation is not supported." }, location: null });
                     return;
                 }
                 navigator.geolocation.getCurrentPosition(async position => {
@@ -958,37 +1036,30 @@
                     try {
                         const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
                         const data = await response.json();
-                        resolve(data.current_weather);
+                        resolve({ weather: data.current_weather, location: { latitude, longitude } });
                     } catch (error) {
                         console.error("Error fetching weather:", error);
-                        resolve({ error: true, message: 'Could not fetch weather data.' });
+                        resolve({ weather: { error: true, message: 'Could not fetch weather.' }, location: { latitude, longitude }});
                     }
                 }, () => {
-                    resolve({ error: true, message: 'Location access was denied.' });
+                    resolve({ weather: { error: true, message: 'Location access denied.' }, location: null });
                 });
             });
 
-            const getNews = async () => {
-                const rssFeedUrl = encodeURIComponent("http://feeds.bbci.co.uk/news/world/rss.xml");
-                try {
-                    const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${rssFeedUrl}`);
-                    const data = await response.json();
-                    return data.status === 'ok' ? { articles: data.items } : { error: true, message: 'Could not load news articles.' };
-                } catch (error) {
-                    console.error("Error fetching news:", error);
-                    return { error: true, message: 'Could not fetch news.' };
-                }
-            };
+            const { weather, location } = await getWeatherAndLocation();
+            let prayerTimes = { error: true, message: 'Location needed for prayer times.' };
+            if(location) {
+                prayerTimes = await getPrayerTimes(location.latitude, location.longitude);
+            }
+            const news = await getNews();
+            const history = await getOnThisDay();
             
-            const [weatherResult, newsResult] = await Promise.allSettled([getWeather(), getNews()]);
+            renderWeather(weather);
+            renderNews(news);
+            renderPrayerTimes(prayerTimes);
+            renderOnThisDay(history);
 
-            const weatherData = weatherResult.status === 'fulfilled' ? weatherResult.value : { error: true, message: 'Failed to get weather.' };
-            const newsData = newsResult.status === 'fulfilled' ? newsResult.value : { error: true, message: 'Failed to get news.' };
-
-            renderWeather(weatherData);
-            renderNews(newsData);
-
-            const newCache = { date: currentDate, weather: weatherData, news: newsData };
+            const newCache = { date: currentDate, weather, news, prayer: prayerTimes, history };
             localStorage.setItem(cacheKey, JSON.stringify(newCache));
         }
 
@@ -1212,4 +1283,3 @@
     </script>
 </body>
 </html>
-
