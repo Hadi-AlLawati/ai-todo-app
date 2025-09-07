@@ -405,15 +405,15 @@
             if (!newsDiv) return;
 
             if (newsData && newsData.apiKeyMissing) {
-                newsDiv.innerHTML = `<p class="text-sm text-yellow-600">Please add your NewsData.io API key to fetch news.</p>`;
+                newsDiv.innerHTML = `<p class="text-sm text-yellow-600">Please add your NewsAPI.org API key to fetch news.</p>`;
                 return;
             }
 
             if (newsData && !newsData.error && newsData.articles) {
                 newsDiv.innerHTML = newsData.articles.slice(0, 5).map(article => `
                     <div class="border-b pb-2 last:border-b-0">
-                        <a href="${article.link}" target="_blank" rel="noopener noreferrer" class="font-semibold hover:text-blue-600">${article.title}</a>
-                        <p class="text-xs text-gray-500">${article.source_id || article.source?.name || ''}</p>
+                        <a href="${article.url}" target="_blank" rel="noopener noreferrer" class="font-semibold hover:text-blue-600">${article.title}</a>
+                        <p class="text-xs text-gray-500">${article.source.name || ''}</p>
                     </div>
                 `).join('');
             } else {
@@ -459,14 +459,14 @@
             });
 
             const getNews = async () => {
-                const newsApiKey = "YOUR_NEWSDATA_API_KEY";
-                if (newsApiKey === "YOUR_NEWSDATA_API_KEY" || !newsApiKey) {
+                const newsApiKey = "NEWS_API_ORG_KEY_PLACEHOLDER";
+                if (newsApiKey === "NEWS_API_ORG_KEY_PLACEHOLDER" || !newsApiKey) {
                     return { error: true, apiKeyMissing: true };
                 }
                 try {
-                    const response = await fetch(`https://newsdata.io/api/1/news?apikey=${newsApiKey}&language=en&category=top`);
+                    const response = await fetch(`https://newsapi.org/v2/top-headlines?country=us&apiKey=${newsApiKey}`);
                     const data = await response.json();
-                    return data.status === 'success' ? { articles: data.results } : { error: true, message: 'Could not load news articles.' };
+                    return data.status === 'ok' ? { articles: data.articles } : { error: true, message: 'Could not load news articles.' };
                 } catch (error) {
                     console.error("Error fetching news:", error);
                     return { error: true, message: 'Could not fetch news.' };
