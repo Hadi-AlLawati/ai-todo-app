@@ -29,10 +29,6 @@
             border-left-color: #09f;
             animation: spin 1s ease infinite;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
         .todo-item span {
             word-break: break-word;
         }
@@ -44,6 +40,35 @@
         }
         .modal-backdrop {
              background-color: rgba(0,0,0,0.5);
+        }
+        .points-animation {
+            position: absolute;
+            animation: points-pop 0.8s ease-out forwards;
+            font-weight: bold;
+            color: #22c55e; /* green-500 */
+        }
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+            opacity: 0;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes points-pop {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-30px) scale(1.2); opacity: 0; }
+        }
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .card {
+             transform: translateY(20px);
+             opacity: 0;
+             animation: fadeInUp 0.5s ease-out forwards;
         }
     </style>
 </head>
@@ -111,25 +136,38 @@
                 
                 <!-- Main Navigation -->
                 <div class="flex justify-center my-4 space-x-2 border-b-2 border-gray-200 pb-2">
-                     <button id="view-tracker-btn" class="view-btn px-4 py-2 rounded-lg text-gray-600 border-b-4">Tracker</button>
-                     <button id="view-analytics-btn" class="view-btn px-4 py-2 rounded-lg text-gray-600 border-b-4">Analytics</button>
-                     <button id="view-settings-btn" class="view-btn px-4 py-2 rounded-lg text-gray-600 border-b-4">Settings</button>
+                     <button id="view-tracker-btn" class="view-btn flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 border-b-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" /></svg>
+                        <span>Tracker</span>
+                     </button>
+                     <button id="view-analytics-btn" class="view-btn flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 border-b-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" /></svg>
+                        <span>Analytics</span>
+                    </button>
+                     <button id="view-settings-btn" class="view-btn flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 border-b-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0l-.1.41a1.5 1.5 0 01-2.1 1.45c-1.45-.4-2.8.9-2.4 2.34l.24 1.1a1.5 1.5 0 01-1.45 2.1l-1.1.24c-1.45.4-1.98 2.32-.54 3.25l.8 1.32a1.5 1.5 0 010 2.4l-.8 1.32c-1.45.93-.92 2.85.54 3.25l1.1.24a1.5 1.5 0 011.45 2.1l-.24 1.1c-.4 1.45.95 2.75 2.4 2.34l1.1-.24a1.5 1.5 0 012.1 1.45l.1.41c.38 1.56 2.6 1.56 2.98 0l.1-.41a1.5 1.5 0 012.1-1.45l1.1.24c1.45.4 2.8-.9 2.4-2.34l-.24-1.1a1.5 1.5 0 011.45-2.1l1.1-.24c1.45-.4 1.98-2.32.54-3.25l-.8-1.32a1.5 1.5 0 010-2.4l.8-1.32c1.45-.93.92-2.85-.54-3.25l-1.1-.24a1.5 1.5 0 01-1.45-2.1l.24-1.1c.4-1.45-.95-2.75-2.4-2.34l-1.1.24a1.5 1.5 0 01-2.1-1.45l-.1-.41zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></svg>
+                        <span>Settings</span>
+                    </button>
                 </div>
-
-                <div class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                 <div class="flex items-center justify-center space-x-6 mt-4">
                     <div id="week-nav-controls" class="flex items-center space-x-4">
                         <button id="prev-week-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg shadow-sm hover:bg-gray-300 transition-colors">&larr; Prev</button>
                         <button id="today-btn" class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-sm hover:bg-blue-600 transition-colors">Today</button>
                         <button id="next-week-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg shadow-sm hover:bg-gray-300 transition-colors">Next &rarr;</button>
                     </div>
-                    <button id="signout-btn" class="px-4 py-2 bg-red-500 text-white font-semibold rounded-lg shadow-sm hover:bg-red-600 transition-colors">Sign Out</button>
+                    <div class="flex items-center space-x-4">
+                         <div class="bg-yellow-100 text-yellow-800 font-bold py-2 px-4 rounded-lg shadow-sm">
+                            Score: <span id="discipline-score">0</span>
+                        </div>
+                        <button id="signout-btn" class="px-4 py-2 bg-red-500 text-white font-semibold rounded-lg shadow-sm hover:bg-red-600 transition-colors">Sign Out</button>
+                    </div>
                 </div>
                  <p id="user-email" class="text-sm text-gray-500 mt-4"></p>
             </header>
 
             <!-- Tracker View -->
             <div id="tracker-view">
-                <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                <div class="bg-white rounded-2xl shadow-lg p-6 mb-6 card">
                     <h2 class="text-xl font-bold mb-2">Weekly Progress</h2>
                     <div class="w-full h-4 bg-gray-200 rounded-full">
                         <div id="total-progress-bar" class="h-full text-center text-xs text-white bg-green-500 rounded-full transition-all duration-500" style="width: 0%;"></div>
@@ -149,7 +187,7 @@
             
             <!-- Analytics View -->
             <div id="analytics-view" class="hidden">
-                 <div class="bg-white rounded-2xl shadow-lg p-6">
+                 <div class="bg-white rounded-2xl shadow-lg p-6 card">
                     <h2 class="text-2xl font-bold text-gray-800 mb-4">Habit Streaks</h2>
                     <div id="streaks-content" class="space-y-3">Loading analytics...</div>
                 </div>
@@ -157,10 +195,13 @@
 
             <!-- Settings View -->
             <div id="settings-view" class="hidden">
-                 <div class="bg-white rounded-2xl shadow-lg p-6">
-                    <div class="flex justify-between items-center mb-4">
+                 <div class="bg-white rounded-2xl shadow-lg p-6 card">
+                    <div class="flex justify-between items-center mb-4 flex-wrap gap-4">
                          <h2 class="text-2xl font-bold text-gray-800">Customize Habits</h2>
-                         <button id="add-habit-btn" class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-sm hover:bg-blue-600 transition-colors">Add New Habit</button>
+                         <div class="flex space-x-2">
+                            <button id="add-habit-btn" class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-sm hover:bg-blue-600 transition-colors text-sm">Add New Habit</button>
+                            <button id="export-data-btn" class="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg shadow-sm hover:bg-green-600 transition-colors text-sm">Export All Data</button>
+                         </div>
                     </div>
                     <div id="settings-content" class="space-y-4">Loading settings...</div>
                 </div>
@@ -236,6 +277,7 @@
         let userId = null;
         let habitData = {};
         let userHabitConfig = {};
+        let userConfig = {};
         let unsubscribe = null;
         let displayedDate = new Date();
         let activeDayIndex = 0;
@@ -253,6 +295,7 @@
         const signoutBtn = document.getElementById('signout-btn');
         const dayNavContainer = document.getElementById('day-nav-container');
         const appContent = document.getElementById('app-content');
+        const disciplineScoreDisplay = document.getElementById('discipline-score');
 
         // View Containers and Buttons
         const views = {
@@ -288,7 +331,7 @@
             "Budget": [ { id: "b1", name: "Spend < 6.67 OMR", type: "checkbox" }, ],
             "Weekly": [ { id: "w1", name: "Family Outing", type: "weekly-checkbox" }, { id: "w2", name: "Extended Family Gathering", type: "weekly-checkbox" }, { id: "w3", name: "Charity", type: "weekly-checkbox" } ]
         };
-        const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const journalPrompts = [
             "What was one win from today, big or small?", "What is something you're grateful for right now?", "What is one thing you can do to make tomorrow even better?", "Describe a moment today that made you smile.", "What challenge did you face today and how did you handle it?", "What are you most looking forward to this week?", "Write about something you learned today.", "If you could describe today in three words, what would they be?", "What's one thing that's been on your mind lately?"
         ];
@@ -302,7 +345,7 @@
                 userId = user.uid;
                 userEmailDisplay.textContent = `Signed in as: ${user.email}`;
                 
-                await loadUserHabitConfig();
+                await loadUserConfig();
 
                 setActiveDayForCurrentWeek();
                 updateViewForDate();
@@ -316,21 +359,31 @@
                 userEmailDisplay.textContent = '';
                 habitData = {};
                 userHabitConfig = {};
+                userConfig = {};
                 loadingOverlay.classList.add('hidden');
             }
         });
         
-        // --- Habit Configuration ---
-        async function loadUserHabitConfig() {
-            const configRef = doc(db, `artifacts/${appId}/users/${userId}/config`, 'habits');
-            const docSnap = await getDoc(configRef);
-            if (docSnap.exists()) {
-                userHabitConfig = docSnap.data();
+        // --- User Configuration (Habits & Score) ---
+        async function loadUserConfig() {
+            const habitConfigRef = doc(db, `artifacts/${appId}/users/${userId}/config`, 'habits');
+            const habitDocSnap = await getDoc(habitConfigRef);
+            if (habitDocSnap.exists()) {
+                userHabitConfig = habitDocSnap.data();
             } else {
-                // First time user, set up default config
                 userHabitConfig = JSON.parse(JSON.stringify(defaultHabits)); // Deep copy
-                await setDoc(configRef, userHabitConfig);
+                await setDoc(habitConfigRef, userHabitConfig);
             }
+
+            const userConfigRef = doc(db, `artifacts/${appId}/users/${userId}/config`, 'user');
+            const userDocSnap = await getDoc(userConfigRef);
+            if(userDocSnap.exists()) {
+                userConfig = userDocSnap.data();
+            } else {
+                userConfig = { disciplineScore: 0 };
+                await setDoc(userConfigRef, userConfig);
+            }
+            disciplineScoreDisplay.textContent = userConfig.disciplineScore || 0;
         }
 
         async function saveUserHabitConfig() {
@@ -338,6 +391,30 @@
             const configRef = doc(db, `artifacts/${appId}/users/${userId}/config`, 'habits');
             await setDoc(configRef, userHabitConfig);
         }
+        
+        let scoreUpdateTimeout;
+        async function incrementScore(points) {
+            userConfig.disciplineScore = (userConfig.disciplineScore || 0) + points;
+            disciplineScoreDisplay.textContent = userConfig.disciplineScore;
+            
+            clearTimeout(scoreUpdateTimeout);
+            scoreUpdateTimeout = setTimeout(() => {
+                const userConfigRef = doc(db, `artifacts/${appId}/users/${userId}/config`, 'user');
+                setDoc(userConfigRef, userConfig, { merge: true });
+            }, 2000); // Debounce Firestore writes
+        }
+
+        function showPointsAnimation(element, points) {
+            const pointsEl = document.createElement('span');
+            pointsEl.textContent = `+${points}`;
+            pointsEl.className = 'points-animation';
+            element.parentElement.style.position = 'relative';
+            element.parentElement.appendChild(pointsEl);
+            setTimeout(() => {
+                pointsEl.remove();
+            }, 800);
+        }
+
 
         // --- Auth Event Handlers ---
         showSignupLink.addEventListener('click', (e) => { e.preventDefault(); loginForm.classList.add('hidden'); signupForm.classList.remove('hidden'); });
@@ -368,21 +445,17 @@
         // --- Date & Week Logic ---
         function getWeekNumber(d) {
             d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+            d.setUTCDate(d.getUTCDate() + 4 - d.getUTCDay());
             const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
             const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
             return [d.getUTCFullYear(), weekNo];
         }
         
-        function getDateOfISOWeek(w, y) {
+        function getDateOfWeek(w, y) {
             const simple = new Date(y, 0, 1 + (w - 1) * 7);
             const dow = simple.getDay();
-            const ISOweekStart = simple;
-            if (dow <= 4)
-                ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
-            else
-                ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
-            return ISOweekStart;
+            simple.setDate(simple.getDate() - dow);
+            return simple;
         }
 
         function setActiveDayForCurrentWeek() {
@@ -390,9 +463,9 @@
              const [currentYear, currentWeek] = getWeekNumber(today);
              const [displayYear, displayWeek] = getWeekNumber(displayedDate);
              if (currentYear === displayYear && currentWeek === displayWeek) {
-                 activeDayIndex = (today.getDay() + 6) % 7; // Monday is 0
+                 activeDayIndex = today.getDay(); // Sunday is 0
              } else {
-                 activeDayIndex = 0; // Default to Monday for other weeks
+                 activeDayIndex = 0; // Default to Sunday for other weeks
              }
         }
 
@@ -507,17 +580,17 @@
 
         function renderContentForDay() {
             const today = new Date();
-            const isCurrentDay = activeDayIndex === (today.getDay() + 6) % 7 &&
+            const isCurrentDay = activeDayIndex === today.getDay() &&
                                 getWeekNumber(displayedDate).join('-') === getWeekNumber(today).join('-');
 
             let html = `
-                ${isCurrentDay ? renderDashboard() : ''}
-                ${renderWeeklySection()}
+                <div class="card">${isCurrentDay ? renderDashboard() : ''}</div>
+                <div class="card" style="animation-delay: 100ms;">${renderWeeklySection()}</div>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    ${renderDayJournal(activeDayIndex)}
-                    ${renderDayTodos(activeDayIndex)}
+                    <div class="card" style="animation-delay: 200ms;">${renderDayJournal(activeDayIndex)}</div>
+                    <div class="card" style="animation-delay: 250ms;">${renderDayTodos(activeDayIndex)}</div>
                 </div>
-                ${renderDayHabits(activeDayIndex)}
+                <div class="card" style="animation-delay: 300ms;">${renderDayHabits(activeDayIndex)}</div>
             `;
             appContent.innerHTML = html;
             if (isCurrentDay) {
@@ -575,25 +648,17 @@
         function calculateAllStreaks(history) {
             const allHabits = Object.values(userHabitConfig).flat();
             const results = {};
-            const sortedWeekIds = Object.keys(history).sort().reverse(); // From most recent to oldest
-
+            
             allHabits.filter(h => h.type !== 'weekly-checkbox').forEach(habit => {
                 let currentStreak = 0;
                 let longestStreak = 0;
-                let isStreakBroken = false;
-                const today = new Date();
-                const todayIndex = (today.getDay() + 6) % 7;
                 
-                // Check if streak is active up to today
-                const [currentYear, currentWeek] = getWeekNumber(today);
-                const currentWeekId = `${currentYear}-W${String(currentWeek).padStart(2, '0')}`;
-                
+                // Calculate current streak
                 let dayToCheck = new Date();
-
-                for(let i = 0; i < 365; i++) { // Check up to a year back
+                for(let i = 0; i < 365; i++) { 
                     const [year, week] = getWeekNumber(dayToCheck);
                     const weekId = `${year}-W${String(week).padStart(2, '0')}`;
-                    const dayIndex = (dayToCheck.getDay() + 6) % 7;
+                    const dayIndex = dayToCheck.getDay();
                     
                     const weekData = history[weekId];
                     let isDone = false;
@@ -604,17 +669,14 @@
                     if (isDone) {
                         currentStreak++;
                     } else {
-                        // The first time we find an undone day, the current streak ends
-                        isStreakBroken = true;
-                        break;
+                        break; // Current streak ends
                     }
-                    
                     dayToCheck.setDate(dayToCheck.getDate() - 1);
                 }
 
-                // Now calculate longest streak
+                // Calculate longest streak
                 let runningLongest = 0;
-                for(const weekId of Object.keys(history).sort()) { // Go chronologically
+                for(const weekId of Object.keys(history).sort()) {
                     const weekData = history[weekId];
                     if(!weekData) continue;
                     for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
@@ -631,7 +693,6 @@
                     }
                 }
                 if(runningLongest > longestStreak) longestStreak = runningLongest;
-
 
                 results[habit.id] = { current: currentStreak, longest: longestStreak };
             });
@@ -664,12 +725,55 @@
         }
 
         function addSettingsEventListeners() {
+            document.getElementById('export-data-btn').addEventListener('click', exportData);
             document.querySelectorAll('.edit-habit-btn').forEach(btn => {
                 btn.addEventListener('click', () => openHabitModal(btn.dataset.id));
             });
              document.querySelectorAll('.delete-habit-btn').forEach(btn => {
                 btn.addEventListener('click', () => deleteHabit(btn.dataset.id));
             });
+        }
+        
+        async function exportData() {
+            if (!userId) return;
+            const exportButton = document.getElementById('export-data-btn');
+            exportButton.textContent = 'Exporting...';
+            exportButton.disabled = true;
+
+            try {
+                const habitsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/habits`);
+                const querySnapshot = await getDocs(habitsCollectionRef);
+                
+                const allHabitData = {};
+                querySnapshot.forEach(doc => {
+                    allHabitData[doc.id] = doc.data();
+                });
+
+                const exportObject = {
+                    userHabitConfig: userHabitConfig,
+                    habitHistory: allHabitData,
+                    exportDate: new Date().toISOString()
+                };
+
+                const jsonString = JSON.stringify(exportObject, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'habit_tracker_export.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+            } catch(error) {
+                console.error("Error exporting data:", error);
+                alert("Could not export data. Please check the console for errors.");
+            } finally {
+                exportButton.textContent = 'Export All Data';
+                exportButton.disabled = false;
+            }
         }
         
         function openHabitModal(habitId = null) {
@@ -784,13 +888,13 @@
                     <button id="refresh-dashboard-btn" class="px-3 py-1 bg-gray-200 text-gray-700 text-sm font-semibold rounded-lg shadow-sm hover:bg-gray-300 transition-colors">Refresh</button>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div id="weather-widget" class="bg-gray-50 p-4 rounded-lg">
-                        <h4 class="font-bold text-gray-700 mb-2">Current Weather</h4>
+                    <div id="weather-widget" class="bg-gray-50 p-4 rounded-lg flex items-center space-x-4">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 9.168A6 6 0 0110 6a6 6 0 015.668 3.168A2 2 0 0114 13H6a2 2 0 01-1.668-3.832z" clip-rule="evenodd" /></svg>
                         <div id="weather-content">Loading weather...</div>
                     </div>
-                    <div id="news-widget" class="bg-gray-50 p-4 rounded-lg">
-                        <h4 class="font-bold text-gray-700 mb-2">Top Headlines</h4>
-                        <div id="news-content" class="text-sm space-y-2">Loading news...</div>
+                    <div id="news-widget" class="bg-gray-50 p-4 rounded-lg flex items-center space-x-4">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-500" viewBox="0 0 20 20" fill="currentColor"><path d="M2 3a1 1 0 011-1h14a1 1 0 011 1v14a1 1 0 01-1 1H3a1 1 0 01-1-1V3z" /><path d="M5 7h10v2H5V7zm0 4h10v2H5v-2zm0 4h5v2H5v-2z" /></svg>
+                        <div id="news-content" class="text-sm space-y-2 flex-grow">Loading news...</div>
                     </div>
                 </div>
             </div>
@@ -802,8 +906,10 @@
             if (!weatherDiv) return;
             if (weatherData && !weatherData.error) {
                 weatherDiv.innerHTML = `
-                    <p class="text-3xl font-bold">${weatherData.temperature}°C</p>
-                    <p>Wind: ${weatherData.windspeed} km/h</p>
+                    <div>
+                        <p class="text-2xl font-bold">${weatherData.temperature}°C</p>
+                        <p class="text-sm text-gray-600">Wind: ${weatherData.windspeed} km/h</p>
+                    </div>
                 `;
             } else {
                 weatherDiv.textContent = (weatherData && weatherData.message) || 'Could not load weather.';
@@ -815,10 +921,9 @@
             if (!newsDiv) return;
 
             if (newsData && !newsData.error && newsData.articles) {
-                newsDiv.innerHTML = newsData.articles.slice(0, 5).map(article => `
-                    <div class="border-b pb-2 last:border-b-0">
-                        <a href="${article.link}" target="_blank" rel="noopener noreferrer" class="font-semibold hover:text-blue-600">${article.title}</a>
-                        <p class="text-xs text-gray-500">BBC News</p>
+                newsDiv.innerHTML = newsData.articles.slice(0, 3).map(article => `
+                    <div class="border-b pb-1 last:border-b-0">
+                        <a href="${article.link}" target="_blank" rel="noopener noreferrer" class="font-semibold hover:text-blue-600 text-xs leading-tight">${article.title}</a>
                     </div>
                 `).join('');
             } else {
@@ -934,7 +1039,7 @@
 
         function renderDayJournal(dayIndex) {
             const [year, weekNo] = getWeekNumber(displayedDate);
-            const weekStartDate = getDateOfISOWeek(weekNo, year);
+            const weekStartDate = getDateOfWeek(weekNo, year);
             const journalDate = new Date(weekStartDate);
             journalDate.setDate(journalDate.getDate() + dayIndex);
             const dayOfYear = Math.floor((journalDate - new Date(journalDate.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
@@ -990,7 +1095,29 @@
             appContent.querySelectorAll('.habit-input').forEach(el => {
                 el.addEventListener('change', (e) => {
                     const { key, day } = e.target.dataset;
-                    habitData[key][parseInt(day)] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+                    const dayIndex = parseInt(day);
+                    const previousState = habitData[key][dayIndex];
+
+                    if (e.target.type === 'checkbox') {
+                        habitData[key][dayIndex] = e.target.checked;
+                         if (e.target.checked && !previousState) {
+                             incrementScore(10);
+                             showPointsAnimation(e.target, 10);
+                         } else if (!e.target.checked && previousState) {
+                             incrementScore(-10);
+                         }
+                    } else {
+                        const hadValue = !!previousState && previousState !== "";
+                        const hasValue = !!e.target.value && e.target.value !== "";
+                        habitData[key][dayIndex] = e.target.value;
+                         if (hasValue && !hadValue) {
+                            incrementScore(10);
+                            showPointsAnimation(e.target, 10);
+                         } else if (!hasValue && hadValue) {
+                            incrementScore(-10);
+                         }
+                    }
+                    
                     updateFirestore();
                     updateProgress();
                 });
@@ -1025,9 +1152,14 @@
             appContent.querySelectorAll('.todo-checkbox, .delete-todo-btn').forEach(el => {
                 el.addEventListener('click', (e) => {
                     const index = parseInt(e.target.dataset.index);
+                    const wasCompleted = habitData.todos[activeDayIndex][index].completed;
+                    
                     if (e.target.classList.contains('todo-checkbox')) {
                          habitData.todos[activeDayIndex][index].completed = e.target.checked;
+                         if(e.target.checked && !wasCompleted) incrementScore(5);
+                         if(!e.target.checked && wasCompleted) incrementScore(-5);
                     } else {
+                         if(wasCompleted) incrementScore(-5);
                          habitData.todos[activeDayIndex].splice(index, 1);
                     }
                     appContent.querySelector('#todo-list').innerHTML = renderSingleDayTodos(activeDayIndex);
@@ -1070,7 +1202,7 @@
                 updateViewForDate();
             } else {
                 // If it's already the current week, just switch to the current day
-                const currentDayIndex = (today.getDay() + 6) % 7;
+                const currentDayIndex = today.getDay();
                 if (activeDayIndex !== currentDayIndex) {
                     activeDayIndex = currentDayIndex;
                     renderApp();
@@ -1080,3 +1212,4 @@
     </script>
 </body>
 </html>
+
