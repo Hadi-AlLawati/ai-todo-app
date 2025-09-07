@@ -141,6 +141,10 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" /></svg>
                         <span>Tracker</span>
                      </button>
+                     <button id="view-log-btn" class="view-btn flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 border-b-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" /></svg>
+                        <span>Hourly Log</span>
+                     </button>
                      <button id="view-analytics-btn" class="view-btn flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 border-b-4">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" /></svg>
                         <span>Analytics</span>
@@ -185,17 +189,35 @@
                     <!-- Day-specific content will be rendered here -->
                 </div>
             </div>
+
+             <!-- Hourly Log View -->
+            <div id="log-view" class="hidden">
+                 <div class="bg-white rounded-2xl shadow-lg p-6 card">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Hourly Log for <span id="hourly-log-date"></span></h2>
+                    <div id="hourly-log-content" class="space-y-2">Loading log...</div>
+                </div>
+            </div>
             
             <!-- Analytics View -->
             <div id="analytics-view" class="hidden">
-                 <div class="bg-white rounded-2xl shadow-lg p-6 card space-y-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Weekly Todo Summary (This Year)</h2>
-                        <canvas id="todo-chart"></canvas>
+                 <div class="bg-white rounded-2xl shadow-lg p-6 card">
+                    <div id="analytics-prompt" class="text-center py-8">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Analytics Dashboard</h2>
+                        <p class="text-gray-600 mb-6">Generate a report to see your weekly todo summary and long-term habit streaks.</p>
+                        <button id="generate-report-btn" class="px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-sm hover:bg-blue-600 transition-colors">
+                            Generate Report
+                        </button>
                     </div>
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Habit Streaks</h2>
-                        <div id="streaks-content" class="space-y-3">Loading analytics...</div>
+
+                    <div id="analytics-content-wrapper" class="hidden space-y-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Weekly Todo Summary</h2>
+                            <canvas id="todo-chart"></canvas>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800 mb-4">Habit Streaks</h2>
+                            <div id="streaks-content" class="space-y-3"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -224,7 +246,7 @@
         </div>
     </div>
     
-    <!-- Habit Modal -->
+    <!-- Modals -->
     <div id="habit-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
             <h3 id="modal-title" class="text-xl font-bold mb-4">Add Habit</h3>
@@ -237,7 +259,6 @@
                 <div class="mb-4">
                     <label for="habit-category" class="block text-sm font-medium text-gray-700">Category</label>
                     <select id="habit-category" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-blue-500 focus:border-blue-500">
-                        <!-- Options will be populated by JS -->
                     </select>
                 </div>
                  <div class="mb-4">
@@ -255,6 +276,24 @@
                 <div class="flex justify-end space-x-2">
                     <button type="button" id="cancel-habit-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">Cancel</button>
                     <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save Habit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="failure-log-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+            <h3 id="failure-modal-title" class="text-xl font-bold mb-4">Log Failure</h3>
+            <form id="failure-log-form">
+                <input type="hidden" id="failure-habit-id">
+                <input type="hidden" id="failure-day-index">
+                 <div class="mb-4">
+                    <label for="failure-reason" class="block text-sm font-medium text-gray-700">Reason for missing this habit:</label>
+                    <textarea id="failure-reason" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-blue-500 focus:border-blue-500" rows="4"></textarea>
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" id="cancel-failure-log-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save Reason</button>
                 </div>
             </form>
         </div>
@@ -288,7 +327,7 @@
         let unsubscribe = null;
         let displayedDate = new Date();
         let activeDayIndex = 0;
-        let currentView = 'tracker'; // tracker, analytics, settings
+        let currentView = 'tracker'; // tracker, analytics, settings, log
         let todoChartInstance = null;
 
         // --- DOM Elements ---
@@ -308,22 +347,31 @@
         // View Containers and Buttons
         const views = {
             tracker: document.getElementById('tracker-view'),
+            log: document.getElementById('log-view'),
             analytics: document.getElementById('analytics-view'),
             settings: document.getElementById('settings-view')
         };
         const viewButtons = {
             tracker: document.getElementById('view-tracker-btn'),
+            log: document.getElementById('view-log-btn'),
             analytics: document.getElementById('view-analytics-btn'),
             settings: document.getElementById('view-settings-btn')
         };
         const weekNavControls = document.getElementById('week-nav-controls');
+        const analyticsPrompt = document.getElementById('analytics-prompt');
+        const analyticsContentWrapper = document.getElementById('analytics-content-wrapper');
+        const generateReportBtn = document.getElementById('generate-report-btn');
         
-        // Modal elements
+        // Modals
         const habitModal = document.getElementById('habit-modal');
         const habitForm = document.getElementById('habit-form');
         const modalTitle = document.getElementById('modal-title');
         const addHabitBtn = document.getElementById('add-habit-btn');
         const cancelHabitBtn = document.getElementById('cancel-habit-btn');
+        const failureLogModal = document.getElementById('failure-log-modal');
+        const failureLogForm = document.getElementById('failure-log-form');
+        const cancelFailureLogBtn = document.getElementById('cancel-failure-log-btn');
+
 
         // --- Default Habit Definitions ---
         const defaultHabits = {
@@ -530,6 +578,8 @@
             }
             data.journal = Array(7).fill("");
             data.todos = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
+            data.failureLog = {};
+            data.hourlyLog = { 0: Array(24).fill(""), 1: Array(24).fill(""), 2: Array(24).fill(""), 3: Array(24).fill(""), 4: Array(24).fill(""), 5: Array(24).fill(""), 6: Array(24).fill("") };
             return data;
         }
 
@@ -557,17 +607,24 @@
                 views[v].classList.toggle('hidden', !is_active);
                 viewButtons[v].classList.toggle('active', is_active);
             });
-            weekNavControls.classList.toggle('hidden', view !== 'tracker');
+            weekNavControls.classList.toggle('hidden', view === 'settings');
 
-            if (view === 'analytics') renderAnalytics();
+            if (view === 'log') renderHourlyLog();
+            if (view === 'analytics') {
+                analyticsPrompt.classList.remove('hidden');
+                analyticsContentWrapper.classList.add('hidden');
+            }
             if (view === 'settings') renderSettings();
         }
 
         // --- Main Render Function ---
         function renderApp() {
-            if(currentView !== 'tracker') return;
-            renderDayNavigation();
-            renderContentForDay();
+            if (currentView === 'tracker') {
+                renderDayNavigation();
+                renderContentForDay();
+            } else if (currentView === 'log') {
+                renderHourlyLog();
+            }
             addAppEventListeners();
             updateProgress();
         }
@@ -608,13 +665,51 @@
         
         // --- Analytics Rendering ---
         async function renderAnalytics() {
+            analyticsPrompt.classList.add('hidden');
+            analyticsContentWrapper.classList.remove('hidden');
+
             const streaksContent = document.getElementById('streaks-content');
             streaksContent.innerHTML = 'Calculating...';
 
+            // Use currently loaded week data for weekly chart
+            const weeklyTodoHistory = calculateWeeklyTodoStats(habitData);
+            const ctx = document.getElementById('todo-chart').getContext('2d');
+            if(todoChartInstance) {
+                todoChartInstance.destroy();
+            }
+            todoChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: weeklyTodoHistory.labels,
+                    datasets: [
+                        {
+                            label: 'Completed Todos',
+                            data: weeklyTodoHistory.completedData,
+                            backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        },
+                        {
+                            label: 'Total Todos',
+                            data: weeklyTodoHistory.totalData,
+                            backgroundColor: 'rgba(209, 213, 219, 0.5)',
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        x: { stacked: false },
+                        y: { 
+                            beginAtZero: true,
+                            stacked: false,
+                             ticks: { stepSize: 1 }
+                        }
+                    }
+                }
+            });
+            
+            // Fetch all data for streaks
             const habitHistory = await fetchAllYearData();
             if(Object.keys(habitHistory).length === 0) {
-                 streaksContent.innerHTML = '<p>Not enough data to calculate stats. Keep tracking your habits!</p>';
-                 if(todoChartInstance) todoChartInstance.destroy();
+                 streaksContent.innerHTML = '<p>Not enough data to calculate streaks. Keep tracking your habits!</p>';
                  return;
             }
 
@@ -635,45 +730,6 @@
             }
             streaksHtml += '</div>';
             streaksContent.innerHTML = streaksHtml;
-
-            // Todo Chart
-            const todoHistory = calculateYearlyTodoStats(habitHistory);
-            const ctx = document.getElementById('todo-chart').getContext('2d');
-            if(todoChartInstance) {
-                todoChartInstance.destroy();
-            }
-            todoChartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: todoHistory.labels,
-                    datasets: [
-                        {
-                            label: 'Completed Todos',
-                            data: todoHistory.completedData,
-                            backgroundColor: 'rgba(59, 130, 246, 0.8)',
-                            borderColor: 'rgba(59, 130, 246, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Total Todos',
-                            data: todoHistory.totalData,
-                            backgroundColor: 'rgba(209, 213, 219, 0.5)',
-                            borderColor: 'rgba(156, 163, 175, 1)',
-                            borderWidth: 1
-                        }
-                    ]
-                },
-                options: {
-                    scales: {
-                        x: { stacked: false },
-                        y: { 
-                            beginAtZero: true,
-                            stacked: false,
-                             ticks: { stepSize: 1 }
-                        }
-                    }
-                }
-            });
         }
 
         async function fetchAllYearData() {
@@ -692,31 +748,16 @@
             }
             return history;
         }
-
-        function calculateYearlyTodoStats(history) {
-            const labels = [];
+        
+        function calculateWeeklyTodoStats(currentWeekData) {
+            const labels = days;
             const totalData = [];
             const completedData = [];
-            const currentYear = new Date().getFullYear();
-            const [_, currentWeek] = getWeekNumber(new Date());
 
-            for (let i = 1; i <= currentWeek; i++) {
-                labels.push(`W${i}`);
-                const weekId = `${currentYear}-W${String(i).padStart(2, '0')}`;
-                const weekData = history[weekId];
-
-                let weeklyTotal = 0;
-                let weeklyCompleted = 0;
-                if(weekData && weekData.todos) {
-                    for(let dayIndex = 0; dayIndex < 7; dayIndex++) {
-                        if(weekData.todos[dayIndex]) {
-                            weeklyTotal += weekData.todos[dayIndex].length;
-                            weeklyCompleted += weekData.todos[dayIndex].filter(t => t.completed).length;
-                        }
-                    }
-                }
-                totalData.push(weeklyTotal);
-                completedData.push(weeklyCompleted);
+            for (let i = 0; i < 7; i++) {
+                const dayTodos = (currentWeekData.todos && currentWeekData.todos[i]) || [];
+                totalData.push(dayTodos.length);
+                completedData.push(dayTodos.filter(t => t.completed).length);
             }
             return { labels, totalData, completedData };
         }
@@ -953,6 +994,15 @@
         addHabitBtn.addEventListener('click', () => openHabitModal());
         cancelHabitBtn.addEventListener('click', closeHabitModal);
         habitForm.addEventListener('submit', saveHabit);
+        generateReportBtn.addEventListener('click', async () => {
+            generateReportBtn.textContent = 'Generating...';
+            generateReportBtn.disabled = true;
+
+            await renderAnalytics();
+
+            generateReportBtn.textContent = 'Generate Report';
+            generateReportBtn.disabled = false;
+        });
 
 
         // --- Dashboard, News & Weather ---
@@ -1366,3 +1416,4 @@
     </script>
 </body>
 </html>
+
