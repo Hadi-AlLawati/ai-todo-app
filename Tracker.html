@@ -179,10 +179,10 @@
                 </div>
 
                 <div id="day-nav-container" class="grid grid-cols-4 sm:grid-cols-7 text-center border-b-2 border-gray-200 mb-6">
-                    </div>
+                </div>
 
                 <div id="app-content" class="space-y-6">
-                    </div>
+                </div>
             </div>
 
              <div id="log-view" class="hidden">
@@ -330,8 +330,15 @@
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // --- OPTIMIZATION: Extract SVGs ---
+        const ICONS = {
+            weather: `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 9.168A6 6 0 0110 6a6 6 0 015.668 3.168A2 2 0 0114 13H6a2 2 0 01-1.668-3.832z" clip-rule="evenodd" /></svg>`,
+            news: `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-500" viewBox="0 0 20 20" fill="currentColor"><path d="M2 3a1 1 0 011-1h14a1 1 0 011 1v14a1 1 0 01-1 1H3a1 1 0 01-1-1V3z" /><path d="M5 7h10v2H5V7zm0 4h10v2H5v-2zm0 4h5v2H5v-2z" /></svg>`,
+            prayer: `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-500" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a.75.75 0 01.75.75v.512c3.54.341 6.25 3.28 6.25 6.738v3.25a.75.75 0 01-1.5 0v-3.25c0-2.89-2.298-5.25-5-5.25v-1.5a.75.75 0 01-.75-.75zM10 4a6 6 0 00-6 6v3.25a.75.75 0 01-1.5 0V10c0-3.458 2.71-6.397 6.25-6.738V2.75A.75.75 0 0110 2zM3 12a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" /></svg>`,
+            history: `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.415L11 9.586V6z" clip-rule="evenodd" /></svg>`
+        };
+
         // --- Firebase Configuration ---
-        // REPLACE THESE WITH YOUR ACTUAL CONFIG
         const firebaseConfig = {
             apiKey: "FIREBASE_API_KEY_PLACEHOLDER",
             authDomain: "FIREBASE_AUTH_DOMAIN_PLACEHOLDER",
@@ -356,6 +363,7 @@
         let currentView = 'tracker'; 
         let todoChartInstance = null;
         let hasUnsavedChanges = false; 
+        let globalListenersAttached = false;
 
         // --- DOM Elements ---
         const authContainer = document.getElementById('auth-container');
@@ -454,6 +462,12 @@
                 
                 // Add save button listeners
                 setupSaveHandlers();
+                
+                // OPTIMIZATION: Attach listeners once
+                if (!globalListenersAttached) {
+                    setupGlobalListeners();
+                    globalListenersAttached = true;
+                }
 
             } else {
                 authContainer.classList.remove('hidden');
@@ -465,6 +479,124 @@
                 loadingOverlay.classList.add('hidden');
             }
         });
+
+        // --- OPTIMIZATION: Delegated Event Listeners ---
+        function setupGlobalListeners() {
+            // Handle App Content clicks (Todos, Failure Log)
+            appContent.addEventListener('click', (e) => {
+                // Log Failure Button
+                if (e.target.classList.contains('log-failure-btn')) {
+                    openFailureLogModal(e.target.dataset.key, e.target.dataset.day);
+                }
+                // Add Todo Button
+                else if (e.target.id === 'add-todo-btn') {
+                    handleAddTodo();
+                }
+                // Delete Todo Button
+                else if (e.target.classList.contains('delete-todo-btn')) {
+                    handleDeleteTodo(e.target.dataset.index);
+                }
+            });
+
+            // Handle Changes (Habit Checkboxes/Selects, Todo Checkboxes)
+            appContent.addEventListener('change', (e) => {
+                // Habit Inputs
+                if (e.target.classList.contains('habit-input')) {
+                    handleHabitChange(e.target);
+                }
+                // Todo Checkbox
+                else if (e.target.classList.contains('todo-checkbox')) {
+                    handleTodoToggle(e.target.dataset.index, e.target.checked);
+                }
+            });
+
+            // Handle Input (Journal)
+            appContent.addEventListener('input', (e) => {
+                if (e.target.classList.contains('journal-entry')) {
+                    const day = parseInt(e.target.dataset.day);
+                    if (!habitData.journal) habitData.journal = Array(7).fill("");
+                    habitData.journal[day] = e.target.value;
+                    markUnsaved();
+                }
+            });
+
+            // Handle Log View Clicks
+            views.log.addEventListener('click', (e) => {
+                 const slot = e.target.closest('.hourly-log-slot');
+                 if (slot) {
+                    const { hour, day } = slot.dataset;
+                    openHourlyLogModal(hour, day);
+                 }
+            });
+        }
+
+        // --- Handlers for Delegated Events ---
+        function handleHabitChange(target) {
+            const { key, day } = target.dataset;
+            const dayIndex = parseInt(day);
+            const previousState = habitData[key] ? habitData[key][dayIndex] : undefined;
+            if (!habitData[key]) {
+                habitData[key] = target.type === 'checkbox' ? Array(7).fill(false) : Array(7).fill("");
+            }
+
+            if (target.type === 'checkbox') {
+                habitData[key][dayIndex] = target.checked;
+                if (target.checked && !previousState) {
+                    incrementScore(10);
+                    showPointsAnimation(target, 10);
+                } else if (!target.checked && previousState) {
+                    incrementScore(-10);
+                }
+            } else {
+                const hadValue = !!previousState && previousState !== "";
+                const hasValue = !!target.value && target.value !== "";
+                habitData[key][dayIndex] = target.value;
+                 if (hasValue && !hadValue) {
+                    incrementScore(10);
+                    showPointsAnimation(target, 10);
+                 } else if (!hasValue && hadValue) {
+                    incrementScore(-10);
+                 }
+            }
+            // Re-render only habits to reflect changes if needed, or just update UI classes
+            // For simplicity and to ensure consistency with original logic, we re-render the habit section
+            // A more granular update could be done here for further optimization.
+            renderDayHabits(activeDayIndex);
+            updateProgress();
+            markUnsaved();
+        }
+
+        function handleAddTodo() {
+            const input = appContent.querySelector('#todo-input');
+            if (input && input.value.trim()) {
+                if (!habitData.todos) habitData.todos = { 0:[], 1:[], 2:[], 3:[], 4:[], 5:[], 6:[] };
+                if (!habitData.todos[activeDayIndex]) habitData.todos[activeDayIndex] = [];
+                habitData.todos[activeDayIndex].push({ text: input.value.trim(), completed: false });
+                input.value = '';
+                appContent.querySelector('#todo-list').innerHTML = renderSingleDayTodos(activeDayIndex);
+                markUnsaved();
+            }
+        }
+
+        function handleDeleteTodo(index) {
+            index = parseInt(index);
+            const wasCompleted = habitData.todos[activeDayIndex][index].completed;
+            if(wasCompleted) incrementScore(-5);
+            habitData.todos[activeDayIndex].splice(index, 1);
+            appContent.querySelector('#todo-list').innerHTML = renderSingleDayTodos(activeDayIndex);
+            markUnsaved();
+        }
+
+        function handleTodoToggle(index, isChecked) {
+            index = parseInt(index);
+            const wasCompleted = habitData.todos[activeDayIndex][index].completed;
+            habitData.todos[activeDayIndex][index].completed = isChecked;
+            if(isChecked && !wasCompleted) incrementScore(5);
+            if(!isChecked && wasCompleted) incrementScore(-5);
+            appContent.querySelector('#todo-list').innerHTML = renderSingleDayTodos(activeDayIndex);
+            markUnsaved();
+        }
+
 
         // --- SAVE HANDLERS (UPDATED) ---
         function setupSaveHandlers() {
@@ -740,7 +872,7 @@
                 renderDayNavigation();
                 renderHourlyLog();
             }
-            addAppEventListeners();
+            // Removed call to addAppEventListeners()
             updateProgress();
         }
         
@@ -917,7 +1049,7 @@
                     for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
                          let isDone = false;
                          if(weekData[habit.id]) {
-                            isDone = habit.type === 'checkbox' ? weekData[habit.id][dayIndex] : !!weekData[habit.id][dayIndex];
+                           isDone = habit.type === 'checkbox' ? weekData[habit.id][dayIndex] : !!weekData[habit.id][dayIndex];
                          }
                          if (isDone) {
                              runningLongest++;
@@ -1134,19 +1266,19 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div id="weather-widget" class="bg-gray-50 p-4 rounded-lg flex items-center justify-center space-x-4">
-                         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 9.168A6 6 0 0110 6a6 6 0 015.668 3.168A2 2 0 0114 13H6a2 2 0 01-1.668-3.832z" clip-rule="evenodd" /></svg>
+                         ${ICONS.weather}
                         <div id="weather-content">Loading weather...</div>
                     </div>
                     <div id="news-widget" class="bg-gray-50 p-4 rounded-lg flex items-center justify-center space-x-4">
-                         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-500" viewBox="0 0 20 20" fill="currentColor"><path d="M2 3a1 1 0 011-1h14a1 1 0 011 1v14a1 1 0 01-1 1H3a1 1 0 01-1-1V3z" /><path d="M5 7h10v2H5V7zm0 4h10v2H5v-2zm0 4h5v2H5v-2z" /></svg>
+                         ${ICONS.news}
                         <div id="news-content" class="text-sm space-y-2 flex-grow">Loading news...</div>
                     </div>
                     <div id="prayer-widget" class="bg-gray-50 p-4 rounded-lg flex items-center justify-center space-x-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-500" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a.75.75 0 01.75.75v.512c3.54.341 6.25 3.28 6.25 6.738v3.25a.75.75 0 01-1.5 0v-3.25c0-2.89-2.298-5.25-5-5.25v-1.5a.75.75 0 01-.75-.75zM10 4a6 6 0 00-6 6v3.25a.75.75 0 01-1.5 0V10c0-3.458 2.71-6.397 6.25-6.738V2.75A.75.75 0 0110 2zM3 12a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" /></svg>
+                        ${ICONS.prayer}
                         <div id="prayer-content" class="text-sm space-y-1">Loading prayer times...</div>
                     </div>
                     <div id="history-widget" class="bg-gray-50 p-4 rounded-lg flex items-center justify-center space-x-4">
-                         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.415L11 9.586V6z" clip-rule="evenodd" /></svg>
+                         ${ICONS.history}
                         <div id="history-content" class="text-sm">Loading history...</div>
                     </div>
                 </div>
@@ -1437,104 +1569,6 @@
             `).join('');
         }
 
-        // --- Event Handling ---
-        function addAppEventListeners() {
-            appContent.addEventListener('click', (e) => {
-                if (e.target.classList.contains('log-failure-btn')) {
-                    openFailureLogModal(e.target.dataset.key, e.target.dataset.day);
-                }
-            });
-            views.log.addEventListener('click', (e) => {
-                 if (e.target.closest('.hourly-log-slot')) {
-                    const slot = e.target.closest('.hourly-log-slot');
-                    const { hour, day } = slot.dataset;
-                    openHourlyLogModal(hour, day);
-                 }
-            });
-
-            // Habit inputs - REPLACED AUTO SAVE WITH markUnsaved()
-            appContent.querySelectorAll('.habit-input').forEach(el => {
-                el.addEventListener('change', (e) => {
-                    const { key, day } = e.target.dataset;
-                    const dayIndex = parseInt(day);
-                    const previousState = habitData[key] ? habitData[key][dayIndex] : undefined;
-                     if (!habitData[key]) {
-                        habitData[key] = el.type === 'checkbox' ? Array(7).fill(false) : Array(7).fill("");
-                    }
-                    if (e.target.type === 'checkbox') {
-                        habitData[key][dayIndex] = e.target.checked;
-                         if (e.target.checked && !previousState) {
-                             incrementScore(10);
-                             showPointsAnimation(e.target, 10);
-                         } else if (!e.target.checked && previousState) {
-                             incrementScore(-10);
-                         }
-                    } else {
-                        const hadValue = !!previousState && previousState !== "";
-                        const hasValue = !!e.target.value && e.target.value !== "";
-                        habitData[key][dayIndex] = e.target.value;
-                         if (hasValue && !hadValue) {
-                            incrementScore(10);
-                            showPointsAnimation(e.target, 10);
-                         } else if (!hasValue && hadValue) {
-                            incrementScore(-10);
-                         }
-                    }
-                    renderDayHabits(activeDayIndex);
-                    addAppEventListeners();
-                    updateProgress();
-                    markUnsaved(); // Trigger Save Bar
-                });
-            });
-            
-            // Journal entry - REMOVED DEBOUNCE SAVE
-            const journalEl = appContent.querySelector('.journal-entry');
-            if (journalEl) {
-                journalEl.addEventListener('input', (e) => {
-                    const day = parseInt(e.target.dataset.day);
-                    if (!habitData.journal) habitData.journal = Array(7).fill("");
-                    habitData.journal[day] = e.target.value;
-                    markUnsaved(); // Trigger Save Bar
-                });
-            }
-            
-            // Todo List interactions - REPLACED AUTO SAVE
-            const addTodoBtn = appContent.querySelector('#add-todo-btn');
-            if (addTodoBtn) {
-                addTodoBtn.addEventListener('click', () => {
-                    const input = appContent.querySelector('#todo-input');
-                    if (input && input.value.trim()) {
-                        if (!habitData.todos) habitData.todos = { 0:[], 1:[], 2:[], 3:[], 4:[], 5:[], 6:[] };
-                        if (!habitData.todos[activeDayIndex]) habitData.todos[activeDayIndex] = [];
-                        habitData.todos[activeDayIndex].push({ text: input.value.trim(), completed: false });
-                        input.value = '';
-                        appContent.querySelector('#todo-list').innerHTML = renderSingleDayTodos(activeDayIndex);
-                        markUnsaved(); // Trigger Save Bar
-                        addAppEventListeners(); // Re-bind delete/check events
-                    }
-                });
-            }
-            
-            appContent.querySelectorAll('.todo-checkbox, .delete-todo-btn').forEach(el => {
-                el.addEventListener('click', (e) => {
-                    const index = parseInt(e.target.dataset.index);
-                    const wasCompleted = habitData.todos[activeDayIndex][index].completed;
-                    
-                    if (e.target.classList.contains('todo-checkbox')) {
-                         habitData.todos[activeDayIndex][index].completed = e.target.checked;
-                         if(e.target.checked && !wasCompleted) incrementScore(5);
-                         if(!e.target.checked && wasCompleted) incrementScore(-5);
-                    } else {
-                         if(wasCompleted) incrementScore(-5);
-                         habitData.todos[activeDayIndex].splice(index, 1);
-                    }
-                    appContent.querySelector('#todo-list').innerHTML = renderSingleDayTodos(activeDayIndex);
-                    markUnsaved(); // Trigger Save Bar
-                    addAppEventListeners();
-                });
-            });
-        }
-        
         // --- Modal Logic ---
         function openFailureLogModal(habitId, dayIndex) {
             failureLogForm.reset();
@@ -1563,7 +1597,6 @@
             markUnsaved(); // Trigger Save Bar
             closeFailureLogModal();
             renderDayHabits(activeDayIndex);
-            addAppEventListeners();
         }
 
         function openHourlyLogModal(hour, day) {
@@ -1601,7 +1634,6 @@
             markUnsaved(); // Trigger Save Bar
             closeHourlyLogModal();
             renderHourlyLog();
-            addAppEventListeners();
         }
         
         cancelFailureLogBtn.addEventListener('click', closeFailureLogModal);
