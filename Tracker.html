@@ -135,7 +135,7 @@
                 <h1 class="text-4xl font-bold text-gray-900">Daily Discipline Tracker</h1>
                 <p class="text-md text-gray-600 mt-2" id="current-week-display">Your journey to consistency starts now.</p>
                 
-                <div class="flex justify-center my-4 space-x-2 border-b-2 border-gray-200 pb-2">
+                <div class="flex justify-center my-4 space-x-2 border-b-2 border-gray-200 pb-2 flex-wrap gap-2">
                      <button id="view-tracker-btn" class="view-btn flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 border-b-4">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" /></svg>
                         <span>Tracker</span>
@@ -147,6 +147,12 @@
                      <button id="view-analytics-btn" class="view-btn flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 border-b-4">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" /></svg>
                         <span>Analytics</span>
+                    </button>
+                    <button id="view-character-btn" class="view-btn flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 border-b-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+                        </svg>
+                        <span>Character</span>
                     </button>
                      <button id="view-settings-btn" class="view-btn flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 border-b-4">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0l-.1.41a1.5 1.5 0 01-2.1 1.45c-1.45-.4-2.8.9-2.4 2.34l.24 1.1a1.5 1.5 0 01-1.45 2.1l-1.1.24c-1.45.4-1.98 2.32-.54 3.25l.8 1.32a1.5 1.5 0 010 2.4l-.8 1.32c-1.45.93-.92 2.85.54 3.25l1.1.24a1.5 1.5 0 011.45 2.1l-.24 1.1c-.4 1.45.95 2.75 2.4 2.34l1.1-.24a1.5 1.5 0 012.1 1.45l.1.41c.38 1.56 2.6 1.56 2.98 0l.1-.41a1.5 1.5 0 012.1-1.45l1.1.24c1.45.4 2.8-.9 2.4-2.34l-.24-1.1a1.5 1.5 0 011.45-2.1l1.1-.24c1.45-.4 1.98-2.32.54-3.25l-.8-1.32a1.5 1.5 0 010-2.4l.8-1.32c1.45-.93.92-2.85-.54-3.25l-1.1-.24a1.5 1.5 0 01-1.45-2.1l.24-1.1c.4-1.45-.95-2.75-2.4-2.34l-1.1.24a1.5 1.5 0 01-2.1-1.45l-.1-.41zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></svg>
@@ -208,6 +214,32 @@
                         </div>
                         <div id="streaks-content" class="hidden space-y-3"></div>
                     </div>
+                </div>
+            </div>
+
+            <div id="character-view" class="hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-6 card mb-6">
+                    <div class="text-center mb-6">
+                        <h2 class="text-3xl font-bold text-gray-900 mb-1" id="character-rank-title">Novice</h2>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 max-w-md mx-auto mt-2">
+                            <div id="xp-bar" class="bg-purple-600 h-2.5 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">Total Monthly XP: <span id="total-xp-display">0</span></p>
+                    </div>
+                    
+                    <div class="relative w-full max-w-lg mx-auto aspect-square">
+                        <canvas id="radar-chart"></canvas>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-8 text-center text-sm">
+                        <div class="p-3 bg-red-50 rounded-lg"><span class="block font-bold text-red-700">Vitality</span><span id="score-vitality">0</span> XP</div>
+                        <div class="p-3 bg-blue-50 rounded-lg"><span class="block font-bold text-blue-700">Intellect</span><span id="score-intellect">0</span> XP</div>
+                        <div class="p-3 bg-purple-50 rounded-lg"><span class="block font-bold text-purple-700">Spirit</span><span id="score-spirit">0</span> XP</div>
+                        <div class="p-3 bg-green-50 rounded-lg"><span class="block font-bold text-green-700">Wealth</span><span id="score-wealth">0</span> XP</div>
+                        <div class="p-3 bg-yellow-50 rounded-lg"><span class="block font-bold text-yellow-700">Social</span><span id="score-social">0</span> XP</div>
+                        <div class="p-3 bg-gray-50 rounded-lg"><span class="block font-bold text-gray-700">Discipline</span><span id="score-discipline">0</span> XP</div>
+                    </div>
+                    <p class="text-xs text-center text-gray-400 mt-4">Solid shape is This Month. Ghost shape is Last Month.</p>
                 </div>
             </div>
 
@@ -362,6 +394,7 @@
         let activeDayIndex = 0;
         let currentView = 'tracker'; 
         let todoChartInstance = null;
+        let radarChartInstance = null; // New chart instance
         let hasUnsavedChanges = false; 
         let globalListenersAttached = false;
 
@@ -389,12 +422,14 @@
             tracker: document.getElementById('tracker-view'),
             log: document.getElementById('log-view'),
             analytics: document.getElementById('analytics-view'),
+            character: document.getElementById('character-view'), // ADDED
             settings: document.getElementById('settings-view')
         };
         const viewButtons = {
             tracker: document.getElementById('view-tracker-btn'),
             log: document.getElementById('view-log-btn'),
             analytics: document.getElementById('view-analytics-btn'),
+            character: document.getElementById('view-character-btn'), // ADDED
             settings: document.getElementById('view-settings-btn')
         };
         const weekNavControls = document.getElementById('week-nav-controls');
@@ -429,6 +464,23 @@
             "Budget": [ { id: "b1", name: "Spend < 6.67 OMR", type: "checkbox" }, ],
             "Weekly": [ { id: "w1", name: "Family Outing", type: "weekly-checkbox" }, { id: "w2", name: "Extended Family Gathering", type: "weekly-checkbox" }, { id: "w3", name: "Charity", type: "weekly-checkbox" } ]
         };
+
+        // --- GAMIFICATION CONFIG ---
+        const ATTRIBUTE_MAP = {
+            // Vitality (Body)
+            "h1": "Vitality", "h2": "Vitality", "h3": "Vitality", "h4": "Vitality", "h5": "Vitality", "h6": "Vitality", "h7": "Vitality", "h8": "Vitality", "h9": "Vitality", "h10": "Vitality",
+            // Intellect (Mind)
+            "m1": "Intellect", "m2": "Intellect", "m3": "Intellect", "m4": "Intellect",
+            // Discipline (Consistency/Planning - moved from Mind)
+            "m5": "Discipline", "m8": "Discipline", "m9": "Discipline",
+            // Social (Connection - moved from Mind/Weekly)
+            "m6": "Social", "m7": "Social", "w1": "Social", "w2": "Social",
+            // Spirit (Soul)
+            "s1": "Spirit", "s2": "Spirit", "s3": "Spirit", "s4": "Spirit",
+            // Wealth (Budget) + Charity moved to Social based on balance
+            "b1": "Wealth", "w3": "Social" 
+        };
+
         const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const journalPrompts = [
             "What was one win from today, big or small?", "What is something you're grateful for right now?", "What is one thing you can do to make tomorrow even better?", "Describe a moment today that made you smile.", "What challenge did you face today and how did you handle it?", "What are you most looking forward to this week?", "Write about something you learned today.", "If you could describe today in three words, what would they be?", "What's one thing that's been on your mind lately?"
@@ -558,9 +610,6 @@
                     incrementScore(-10);
                  }
             }
-            // Re-render only habits to reflect changes if needed, or just update UI classes
-            // For simplicity and to ensure consistency with original logic, we re-render the habit section
-            // A more granular update could be done here for further optimization.
             renderDayHabits(activeDayIndex);
             updateProgress();
             markUnsaved();
@@ -677,11 +726,9 @@
             await setDoc(configRef, userHabitConfig);
         }
         
-        // REMOVED AUTO-SAVE TIMEOUT FROM HERE
         function incrementScore(points) {
             userConfig.disciplineScore = (userConfig.disciplineScore || 0) + points;
             disciplineScoreDisplay.textContent = userConfig.disciplineScore;
-            // No setDoc here anymore! It waits for global save.
         }
 
         function showPointsAnimation(element, points) {
@@ -860,6 +907,10 @@
                 document.getElementById('streaks-content').classList.add('hidden');
                  renderWeeklyTodoChart();
             }
+            // NEW: Render Character Page
+            if (view === 'character') {
+                renderCharacterPage();
+            }
             if (view === 'settings') renderSettings();
         }
 
@@ -872,7 +923,6 @@
                 renderDayNavigation();
                 renderHourlyLog();
             }
-            // Removed call to addAppEventListeners()
             updateProgress();
         }
         
@@ -1065,6 +1115,171 @@
             });
 
             return results;
+        }
+
+        // --- CHARACTER / GAMIFICATION LOGIC ---
+
+        async function renderCharacterPage() {
+            // 1. Calculate stats for Current Month vs Last Month
+            const currentStats = await calculateMonthStats(0); // 0 = This month
+            const ghostStats = await calculateMonthStats(-1);  // -1 = Last month
+
+            // 2. Render Chart
+            const ctx = document.getElementById('radar-chart').getContext('2d');
+            
+            if (radarChartInstance) {
+                radarChartInstance.destroy();
+            }
+
+            const labels = ["Vitality", "Intellect", "Spirit", "Wealth", "Social", "Discipline"];
+            const currentData = labels.map(l => currentStats.scores[l] || 0);
+            const ghostData = labels.map(l => ghostStats.scores[l] || 0);
+
+            // Dynamic Max Scale: Find the highest score to scale the chart nicely
+            const maxScore = Math.max(...currentData, ...ghostData, 100); // Minimum 100 scale
+
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Current Month',
+                            data: currentData,
+                            backgroundColor: 'rgba(99, 102, 241, 0.5)', // Indigo
+                            borderColor: 'rgba(99, 102, 241, 1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(99, 102, 241, 1)'
+                        },
+                        {
+                            label: 'Last Month',
+                            data: ghostData,
+                            backgroundColor: 'rgba(156, 163, 175, 0.2)', // Gray (Ghost)
+                            borderColor: 'rgba(156, 163, 175, 0.5)',
+                            borderWidth: 1,
+                            pointBackgroundColor: 'transparent',
+                            pointBorderColor: 'transparent' // Hide points for ghost to keep it clean
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0,0,0,0.1)' },
+                            grid: { color: 'rgba(0,0,0,0.1)' },
+                            pointLabels: {
+                                font: { size: 12, weight: 'bold' },
+                                color: '#374151'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: maxScore + 20 // Add breathing room
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // 3. Update Rank & XP UI
+            const totalXP = currentStats.total;
+            let rank = "Novice";
+            let progressPercent = 0;
+
+            if (totalXP < 500) {
+                rank = "Novice";
+                progressPercent = (totalXP / 500) * 100;
+            } else if (totalXP < 1500) {
+                rank = "Apprentice";
+                progressPercent = ((totalXP - 500) / 1000) * 100;
+            } else if (totalXP < 3000) {
+                rank = "Consistent";
+                progressPercent = ((totalXP - 1500) / 1500) * 100;
+            } else {
+                rank = "Master";
+                progressPercent = 100;
+            }
+
+            document.getElementById('character-rank-title').textContent = rank;
+            document.getElementById('total-xp-display').textContent = totalXP;
+            document.getElementById('xp-bar').style.width = `${progressPercent}%`;
+
+            // Update individual score boxes
+            labels.forEach(l => {
+                const el = document.getElementById(`score-${l.toLowerCase()}`);
+                if(el) el.textContent = currentStats.scores[l] || 0;
+            });
+        }
+
+        async function calculateMonthStats(monthOffset) {
+            const scores = { "Vitality": 0, "Intellect": 0, "Spirit": 0, "Wealth": 0, "Social": 0, "Discipline": 0 };
+            let total = 0;
+
+            // 1. Determine Week IDs involved in this month
+            const targetDate = new Date();
+            targetDate.setMonth(targetDate.getMonth() + monthOffset);
+            const year = targetDate.getFullYear();
+            const month = targetDate.getMonth(); // 0-11
+
+            // Simple approximation: check 5 weeks around the target month
+            const firstDayOfMonth = new Date(year, month, 1);
+            const [startYear, startWeek] = getWeekNumber(firstDayOfMonth);
+            
+            // Fetch up to 5 weeks of data to cover the month
+            for (let w = 0; w < 5; w++) {
+                let currentW = startWeek + w;
+                let currentY = startYear;
+                // Handle year rollover for weeks
+                if (currentW > 52) { currentW -= 52; currentY++; }
+                
+                const weekId = `${currentY}-W${String(currentW).padStart(2, '0')}`;
+                
+                let weekData;
+                // Check if this week is currently loaded in memory to save a read
+                if (weekId === getWeekNumber(displayedDate).join('-W').replace(/-W(\d)$/, '-W0$1')) {
+                    weekData = habitData; 
+                } else {
+                    // Fetch from Firestore
+                    try {
+                        const docRef = doc(db, `artifacts/${appId}/users/${userId}/habits`, weekId);
+                        const snap = await getDoc(docRef);
+                        if (snap.exists()) weekData = snap.data();
+                    } catch (e) { console.log("Skipping week", weekId); }
+                }
+
+                if (weekData) {
+                    // Sum points
+                    Object.keys(weekData).forEach(habitKey => {
+                        const attribute = ATTRIBUTE_MAP[habitKey];
+                        if (attribute && userHabitConfig) {
+                             let habitType = 'checkbox'; // default
+                             for(const cat in userHabitConfig) {
+                                 const h = userHabitConfig[cat].find(x => x.id === habitKey);
+                                 if(h) { habitType = h.type; break; }
+                             }
+
+                             const values = weekData[habitKey];
+                             if(Array.isArray(values)) {
+                                 values.forEach(val => {
+                                     // Scoring Rule: 10 XP per completion
+                                     let points = 0;
+                                     if(habitType === 'checkbox' || habitType === 'weekly-checkbox') {
+                                         if(val === true) points = 10;
+                                     } else {
+                                         if(val && val !== "") points = 10;
+                                     }
+                                     
+                                     if(points > 0) {
+                                         scores[attribute] += points;
+                                         total += points;
+                                     }
+                                 });
+                             }
+                        }
+                    });
+                }
+            }
+            return { scores, total };
         }
 
 
