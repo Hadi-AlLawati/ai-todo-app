@@ -11,6 +11,8 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f4f7f6;
+            /* Add padding bottom to prevent save bar from covering content */
+            padding-bottom: 80px; 
         }
         .custom-select {
             -webkit-appearance: none;
@@ -82,10 +84,8 @@
         <div class="loading-spinner"></div>
     </div>
 
-    <!-- Auth Container -->
     <div id="auth-container" class="flex items-center justify-center min-h-screen bg-gray-50">
         <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-lg">
-            <!-- Login Form -->
             <form id="login-form" class="space-y-6">
                 <h2 class="text-3xl font-bold text-center text-gray-900">Welcome Back!</h2>
                 <div>
@@ -107,7 +107,6 @@
                 </p>
             </form>
 
-            <!-- Signup Form -->
             <form id="signup-form" class="hidden space-y-6">
                 <h2 class="text-3xl font-bold text-center text-gray-900">Create an Account</h2>
                 <div>
@@ -131,14 +130,12 @@
         </div>
     </div>
 
-    <!-- Main App Container -->
     <div id="app-container" class="hidden">
         <div class="container mx-auto p-4 md:p-8">
             <header class="text-center mb-8">
                 <h1 class="text-4xl font-bold text-gray-900">Daily Discipline Tracker</h1>
                 <p class="text-md text-gray-600 mt-2" id="current-week-display">Your journey to consistency starts now.</p>
                 
-                <!-- Main Navigation -->
                 <div class="flex justify-center my-4 space-x-2 border-b-2 border-gray-200 pb-2">
                      <button id="view-tracker-btn" class="view-btn flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 border-b-4">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" /></svg>
@@ -173,7 +170,6 @@
                  <p id="user-email" class="text-sm text-gray-500 mt-4"></p>
             </header>
 
-            <!-- Tracker View -->
             <div id="tracker-view">
                 <div class="bg-white rounded-2xl shadow-lg p-6 mb-6 card">
                     <h2 class="text-xl font-bold mb-2">Weekly Progress</h2>
@@ -183,25 +179,20 @@
                     <p id="total-progress-text" class="text-center text-sm font-medium text-gray-600 mt-2">0% Complete</p>
                 </div>
 
-                <!-- Day Navigation Tabs -->
                 <div id="day-nav-container" class="grid grid-cols-4 sm:grid-cols-7 text-center border-b-2 border-gray-200 mb-6">
-                    <!-- Day buttons will be inserted here -->
-                </div>
+                    </div>
 
                 <div id="app-content" class="space-y-6">
-                    <!-- Day-specific content will be rendered here -->
-                </div>
+                    </div>
             </div>
 
-             <!-- Hourly Log View -->
-            <div id="log-view" class="hidden">
+             <div id="log-view" class="hidden">
                  <div class="bg-white rounded-2xl shadow-lg p-6 card">
                     <h2 class="text-2xl font-bold text-gray-800 mb-4">Hourly Log for <span id="hourly-log-date"></span></h2>
                     <div id="hourly-log-content" class="space-y-2">Loading log...</div>
                 </div>
             </div>
             
-            <!-- Analytics View -->
             <div id="analytics-view" class="hidden">
                  <div class="bg-white rounded-2xl shadow-lg p-6 card space-y-6">
                     <div>
@@ -221,7 +212,6 @@
                 </div>
             </div>
 
-            <!-- Settings View -->
             <div id="settings-view" class="hidden">
                  <div class="bg-white rounded-2xl shadow-lg p-6 card">
                     <div class="flex justify-between items-center mb-4 flex-wrap gap-4">
@@ -245,7 +235,6 @@
         </div>
     </div>
     
-    <!-- Modals -->
     <div id="habit-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
             <h3 id="modal-title" class="text-xl font-bold mb-4">Add Habit</h3>
@@ -320,6 +309,22 @@
         </div>
     </div>
 
+    <div id="save-bar" class="fixed bottom-0 left-0 w-full bg-white border-t-2 border-blue-100 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] transform translate-y-full transition-transform duration-300 flex justify-between items-center z-50">
+        <div class="flex items-center space-x-2">
+            <span class="flex h-3 w-3 relative">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-yellow-500"></span>
+            </span>
+            <span class="text-gray-700 font-semibold">You have unsaved changes</span>
+        </div>
+        <div class="flex space-x-3">
+             <button id="discard-changes-btn" class="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium">Discard</button>
+             <button id="global-save-btn" class="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-md transition-colors flex items-center space-x-2">
+                <span>Save Changes</span>
+             </button>
+        </div>
+    </div>
+
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -327,6 +332,7 @@
         import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Firebase Configuration ---
+        // REPLACE THESE WITH YOUR ACTUAL CONFIG
         const firebaseConfig = {
             apiKey: "FIREBASE_API_KEY_PLACEHOLDER",
             authDomain: "FIREBASE_AUTH_DOMAIN_PLACEHOLDER",
@@ -348,8 +354,9 @@
         let unsubscribe = null;
         let displayedDate = new Date();
         let activeDayIndex = 0;
-        let currentView = 'tracker'; // tracker, analytics, settings, log
+        let currentView = 'tracker'; 
         let todoChartInstance = null;
+        let hasUnsavedChanges = false; // NEW FLAG
 
         // --- DOM Elements ---
         const authContainer = document.getElementById('auth-container');
@@ -364,6 +371,11 @@
         const dayNavContainer = document.getElementById('day-nav-container');
         const appContent = document.getElementById('app-content');
         const disciplineScoreDisplay = document.getElementById('discipline-score');
+
+        // Save Bar Elements (NEW)
+        const saveBar = document.getElementById('save-bar');
+        const globalSaveBtn = document.getElementById('global-save-btn');
+        const discardBtn = document.getElementById('discard-changes-btn');
 
         // View Containers and Buttons
         const views = {
@@ -380,7 +392,6 @@
         };
         const weekNavControls = document.getElementById('week-nav-controls');
         const analyticsPrompt = document.getElementById('analytics-prompt');
-        const analyticsContentWrapper = document.getElementById('analytics-content-wrapper');
         const generateReportBtn = document.getElementById('generate-report-btn');
         
         // Modals
@@ -441,6 +452,9 @@
                 setActiveDayForCurrentWeek();
                 updateViewForDate();
                 setupViewNavigation();
+                
+                // Add save button listeners
+                setupSaveHandlers();
 
             } else {
                 authContainer.classList.remove('hidden');
@@ -449,11 +463,56 @@
                 userId = null;
                 userEmailDisplay.textContent = '';
                 habitData = {};
-                userHabitConfig = {};
-                userConfig = {};
                 loadingOverlay.classList.add('hidden');
             }
         });
+
+        // --- SAVE HANDLERS (NEW) ---
+        function setupSaveHandlers() {
+            globalSaveBtn.addEventListener('click', async () => {
+                const btnContent = globalSaveBtn.innerHTML;
+                globalSaveBtn.innerHTML = `<span>Saving...</span>`;
+                globalSaveBtn.disabled = true;
+                
+                await updateFirestore(); // ACTUALLY SAVE HERE
+                
+                hasUnsavedChanges = false;
+                
+                // UI Feedback
+                globalSaveBtn.innerHTML = `<span>Saved!</span>`;
+                setTimeout(() => {
+                    saveBar.classList.add('translate-y-full'); // Hide bar
+                    globalSaveBtn.innerHTML = `<span>Save Changes</span>`;
+                    globalSaveBtn.disabled = false;
+                }, 1000);
+            });
+
+            discardBtn.addEventListener('click', () => {
+                if(confirm("Discard all unsaved changes? This will revert to the last saved state.")) {
+                    hasUnsavedChanges = false;
+                    saveBar.classList.add('translate-y-full');
+                    // Re-fetch data to revert UI
+                    const [year, week] = getWeekNumber(displayedDate);
+                    const weekId = `${year}-W${String(week).padStart(2, '0')}`;
+                    setupTracker(weekId);
+                }
+            });
+
+            // Prevent closing window if unsaved
+            window.addEventListener('beforeunload', (e) => {
+                if (hasUnsavedChanges) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+        }
+
+        function markUnsaved() {
+            if (!hasUnsavedChanges) {
+                hasUnsavedChanges = true;
+                saveBar.classList.remove('translate-y-full'); // Show bar
+            }
+        }
         
         // --- User Configuration (Habits & Score) ---
         async function loadUserConfig() {
@@ -492,7 +551,7 @@
             scoreUpdateTimeout = setTimeout(() => {
                 const userConfigRef = doc(db, `artifacts/${appId}/users/${userId}/config`, 'user');
                 setDoc(userConfigRef, userConfig, { merge: true });
-            }, 2000); // Debounce Firestore writes
+            }, 2000); 
         }
 
         function showPointsAnimation(element, points) {
@@ -556,7 +615,7 @@
              if (currentYear === displayYear && currentWeek === displayWeek) {
                  activeDayIndex = today.getDay(); // Sunday is 0
              } else {
-                 activeDayIndex = 0; // Default to Sunday for other weeks
+                 activeDayIndex = 0; 
              }
         }
 
@@ -577,6 +636,11 @@
         }
 
         function navigateWeeks(offset) { 
+            if(hasUnsavedChanges) {
+                if(!confirm("You have unsaved changes. Discard them and switch weeks?")) return;
+                hasUnsavedChanges = false;
+                saveBar.classList.add('translate-y-full');
+            }
             displayedDate.setDate(displayedDate.getDate() + (offset * 7)); 
             setActiveDayForCurrentWeek();
             updateViewForDate(); 
@@ -586,11 +650,15 @@
         async function setupTracker(weekId) {
             const docRef = doc(db, `artifacts/${appId}/users/${userId}/habits`, weekId);
             if (unsubscribe) unsubscribe(); 
+            // NOTE: This snapshot listener will only fire on external changes or first load
+            // since we are manually handling local updates now.
             unsubscribe = onSnapshot(docRef, (docSnap) => {
-                habitData = docSnap.exists() ? docSnap.data() : initializeEmptyHabitData();
-                if (!docSnap.exists()) { setDoc(docRef, habitData); }
-                renderApp();
-                loadingOverlay.classList.add('hidden');
+                if(!hasUnsavedChanges) { // Only update UI from DB if we don't have local unsaved changes
+                    habitData = docSnap.exists() ? docSnap.data() : initializeEmptyHabitData();
+                    if (!docSnap.exists()) { setDoc(docRef, habitData); }
+                    renderApp();
+                    loadingOverlay.classList.add('hidden');
+                }
             }, (error) => {
                 console.error("Error fetching document:", error);
                 loadingOverlay.innerHTML = `<p class="text-red-500">Error loading data. Check console.</p>`;
@@ -624,7 +692,7 @@
              const weekId = `${year}-W${String(week).padStart(2, '0')}`;
              const docRef = doc(db, `artifacts/${appId}/users/${userId}/habits`, weekId);
              try { await setDoc(docRef, habitData, { merge: true }); } 
-             catch (error) { console.error("Error updating Firestore: ", error); }
+             catch (error) { console.error("Error updating Firestore: ", error); alert("Failed to save."); }
         }
 
         // --- View Navigation ---
@@ -636,6 +704,9 @@
         }
 
         function switchView(view) {
+            if(hasUnsavedChanges && view !== currentView) {
+                if(!confirm("You have unsaved changes. Leave this view?")) return;
+            }
             currentView = view;
             Object.keys(views).forEach(v => {
                 const is_active = v === view;
@@ -700,10 +771,6 @@
                     fetchDashboardData();
                 } catch (error) {
                     console.error("Dashboard failed to load:", error);
-                    const dashboardEl = document.getElementById('dashboard');
-                    if (dashboardEl) {
-                        dashboardEl.innerHTML = `<p class="text-red-500 text-center">Could not load dashboard widgets.</p>`;
-                    }
                 }
             }
         }
@@ -1261,12 +1328,12 @@
             Object.keys(userHabitConfig).filter(c => c !== 'Weekly').forEach(category => {
                 html += `<div><h4 class="text-lg font-semibold text-gray-600 mb-2">${category}</h4><div class="space-y-3">`;
                 userHabitConfig[category].forEach(habit => {
-                     const key = habit.id;
-                     if (!habitData[key]) { habitData[key] = habit.type === 'checkbox' ? Array(7).fill(false) : Array(7).fill(""); }
-                     const habitState = habitData[key][dayIndex];
-                     const failureReason = (habitData.failureLog && habitData.failureLog[key] && habitData.failureLog[key][dayIndex]) || "";
-                     
-                     html += `<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      const key = habit.id;
+                      if (!habitData[key]) { habitData[key] = habit.type === 'checkbox' ? Array(7).fill(false) : Array(7).fill(""); }
+                      const habitState = habitData[key][dayIndex];
+                      const failureReason = (habitData.failureLog && habitData.failureLog[key] && habitData.failureLog[key][dayIndex]) || "";
+                      
+                      html += `<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <label class="font-medium text-gray-700">${habit.name}</label>
                         <div class="flex items-center space-x-2">`;
 
@@ -1274,12 +1341,12 @@
                         html += `<button data-key="${key}" data-day="${dayIndex}" class="log-failure-btn text-xs ${failureReason ? 'text-yellow-600' : 'text-gray-500'} hover:underline">${failureReason ? 'View Reason' : 'Log Failure'}</button>`;
                     }
 
-                     if (habit.type === 'checkbox') {
-                         html += `<input type="checkbox" data-key="${key}" data-day="${dayIndex}" class="h-6 w-6 rounded border-gray-300 text-green-500 focus:ring-green-400 cursor-pointer habit-input" ${habitState ? 'checked' : ''}>`;
-                     } else if (habit.type === 'select') {
-                         html += `<select data-key="${key}" data-day="${dayIndex}" class="custom-select rounded-md border-gray-300 shadow-sm focus:border-green-400 focus:ring focus:ring-green-300 focus:ring-opacity-50 text-sm py-1.5 w-40 habit-input">${(habit.options || []).map(opt => `<option value="${opt}" ${opt === (habitState || "") ? 'selected' : ''}>${opt || 'Select'}</option>`).join('')}</select>`;
-                     }
-                     html += `</div></div>`;
+                      if (habit.type === 'checkbox') {
+                          html += `<input type="checkbox" data-key="${key}" data-day="${dayIndex}" class="h-6 w-6 rounded border-gray-300 text-green-500 focus:ring-green-400 cursor-pointer habit-input" ${habitState ? 'checked' : ''}>`;
+                      } else if (habit.type === 'select') {
+                          html += `<select data-key="${key}" data-day="${dayIndex}" class="custom-select rounded-md border-gray-300 shadow-sm focus:border-green-400 focus:ring focus:ring-green-300 focus:ring-opacity-50 text-sm py-1.5 w-40 habit-input">${(habit.options || []).map(opt => `<option value="${opt}" ${opt === (habitState || "") ? 'selected' : ''}>${opt || 'Select'}</option>`).join('')}</select>`;
+                      }
+                      html += `</div></div>`;
                 });
                 html += `</div></div>`;
             });
@@ -1378,7 +1445,7 @@
                  }
             });
 
-            // Habit inputs
+            // Habit inputs - REPLACED AUTO SAVE WITH markUnsaved()
             appContent.querySelectorAll('.habit-input').forEach(el => {
                 el.addEventListener('change', (e) => {
                     const { key, day } = e.target.dataset;
@@ -1408,23 +1475,23 @@
                     }
                     renderDayHabits(activeDayIndex);
                     addAppEventListeners();
-                    updateFirestore();
                     updateProgress();
+                    markUnsaved(); // Trigger Save Bar
                 });
             });
-            // Journal entry
-            let journalTimeout;
+            
+            // Journal entry - REMOVED DEBOUNCE SAVE
             const journalEl = appContent.querySelector('.journal-entry');
             if (journalEl) {
                 journalEl.addEventListener('input', (e) => {
-                    clearTimeout(journalTimeout);
                     const day = parseInt(e.target.dataset.day);
                     if (!habitData.journal) habitData.journal = Array(7).fill("");
                     habitData.journal[day] = e.target.value;
-                    journalTimeout = setTimeout(updateFirestore, 500); // Debounce
+                    markUnsaved(); // Trigger Save Bar
                 });
             }
-            // Todo List interactions
+            
+            // Todo List interactions - REPLACED AUTO SAVE
             const addTodoBtn = appContent.querySelector('#add-todo-btn');
             if (addTodoBtn) {
                 addTodoBtn.addEventListener('click', () => {
@@ -1435,10 +1502,12 @@
                         habitData.todos[activeDayIndex].push({ text: input.value.trim(), completed: false });
                         input.value = '';
                         appContent.querySelector('#todo-list').innerHTML = renderSingleDayTodos(activeDayIndex);
-                        updateFirestore();
+                        markUnsaved(); // Trigger Save Bar
+                        addAppEventListeners(); // Re-bind delete/check events
                     }
                 });
             }
+            
             appContent.querySelectorAll('.todo-checkbox, .delete-todo-btn').forEach(el => {
                 el.addEventListener('click', (e) => {
                     const index = parseInt(e.target.dataset.index);
@@ -1453,7 +1522,8 @@
                          habitData.todos[activeDayIndex].splice(index, 1);
                     }
                     appContent.querySelector('#todo-list').innerHTML = renderSingleDayTodos(activeDayIndex);
-                    updateFirestore();
+                    markUnsaved(); // Trigger Save Bar
+                    addAppEventListeners();
                 });
             });
         }
@@ -1483,7 +1553,7 @@
             
             habitData.failureLog[habitId][dayIndex] = reason;
 
-            await updateFirestore();
+            markUnsaved(); // Trigger Save Bar
             closeFailureLogModal();
             renderDayHabits(activeDayIndex);
             addAppEventListeners();
@@ -1521,7 +1591,7 @@
             
             habitData.hourlyLog[day][hour] = { activity, category };
 
-            await updateFirestore();
+            markUnsaved(); // Trigger Save Bar
             closeHourlyLogModal();
             renderHourlyLog();
             addAppEventListeners();
@@ -1560,13 +1630,17 @@
         document.getElementById('prev-week-btn').addEventListener('click', () => navigateWeeks(-1));
         document.getElementById('next-week-btn').addEventListener('click', () => navigateWeeks(1));
         document.getElementById('today-btn').addEventListener('click', () => {
+             if(hasUnsavedChanges) {
+                if(!confirm("You have unsaved changes. Discard them?")) return;
+                hasUnsavedChanges = false;
+                saveBar.classList.add('translate-y-full');
+            }
             const today = new Date();
              if (getWeekNumber(displayedDate).join('-') !== getWeekNumber(today).join('-')) {
                 displayedDate = today;
                 setActiveDayForCurrentWeek();
                 updateViewForDate();
             } else {
-                // If it's already the current week, just switch to the current day
                 const currentDayIndex = today.getDay();
                 if (activeDayIndex !== currentDayIndex) {
                     activeDayIndex = currentDayIndex;
@@ -1577,4 +1651,3 @@
     </script>
 </body>
 </html>
-
