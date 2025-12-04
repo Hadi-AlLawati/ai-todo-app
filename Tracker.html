@@ -227,11 +227,11 @@
                         <p class="text-sm text-gray-500 mt-2">Total Monthly XP: <span id="total-xp-display">0</span></p>
                     </div>
                     
-                    <div class="relative w-full max-w-lg mx-auto aspect-square">
+                    <div class="relative w-full max-w-lg mx-auto aspect-square mb-8">
                         <canvas id="radar-chart"></canvas>
                     </div>
-                    
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-8 text-center text-sm">
+
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4 mb-8 text-center text-sm">
                         <div class="p-3 bg-red-50 rounded-lg"><span class="block font-bold text-red-700">Vitality</span><span id="score-vitality">0</span> XP</div>
                         <div class="p-3 bg-blue-50 rounded-lg"><span class="block font-bold text-blue-700">Intellect</span><span id="score-intellect">0</span> XP</div>
                         <div class="p-3 bg-purple-50 rounded-lg"><span class="block font-bold text-purple-700">Spirit</span><span id="score-spirit">0</span> XP</div>
@@ -239,7 +239,23 @@
                         <div class="p-3 bg-yellow-50 rounded-lg"><span class="block font-bold text-yellow-700">Social</span><span id="score-social">0</span> XP</div>
                         <div class="p-3 bg-gray-50 rounded-lg"><span class="block font-bold text-gray-700">Discipline</span><span id="score-discipline">0</span> XP</div>
                     </div>
-                    <p class="text-xs text-center text-gray-400 mt-4">Solid shape is This Month. Ghost shape is Last Month.</p>
+                    
+                    <hr class="border-gray-200 my-6">
+
+                    <div>
+                        <div class="flex flex-col sm:flex-row justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-gray-800">Stats History</h3>
+                            <div class="flex space-x-2 mt-2 sm:mt-0 bg-gray-100 p-1 rounded-lg">
+                                <button class="history-filter-btn px-3 py-1 text-xs font-semibold rounded-md transition-colors text-gray-500 hover:bg-white hover:shadow-sm" data-range="daily">Daily</button>
+                                <button class="history-filter-btn px-3 py-1 text-xs font-semibold rounded-md transition-colors bg-white shadow-sm text-blue-600" data-range="weekly">Weekly</button>
+                                <button class="history-filter-btn px-3 py-1 text-xs font-semibold rounded-md transition-colors text-gray-500 hover:bg-white hover:shadow-sm" data-range="monthly">Monthly</button>
+                                <button class="history-filter-btn px-3 py-1 text-xs font-semibold rounded-md transition-colors text-gray-500 hover:bg-white hover:shadow-sm" data-range="yearly">Yearly</button>
+                            </div>
+                        </div>
+                        <div class="w-full h-64 sm:h-80">
+                            <canvas id="history-chart"></canvas>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -397,6 +413,7 @@
         let radarChartInstance = null; // New chart instance
         let hasUnsavedChanges = false; 
         let globalListenersAttached = false;
+        let historyChartInstance = null; // Add this line
 
         // --- DOM Elements ---
         const authContainer = document.getElementById('auth-container');
@@ -1119,12 +1136,11 @@
 
         // --- CHARACTER / GAMIFICATION LOGIC ---
 
-        async function renderCharacterPage() {
-            // 1. Calculate stats for Current Month vs Last Month
-            const currentStats = await calculateMonthStats(0); // 0 = This month
-            const ghostStats = await calculateMonthStats(-1);  // -1 = Last month
+       async function renderCharacterPage() {
+            // --- Part 1: Radar Chart (Existing Logic) ---
+            const currentStats = await calculateMonthStats(0); 
+            const ghostStats = await calculateMonthStats(-1);  
 
-            // 2. Render Chart
             const ctx = document.getElementById('radar-chart').getContext('2d');
             
             if (radarChartInstance) {
@@ -1134,9 +1150,7 @@
             const labels = ["Vitality", "Intellect", "Spirit", "Wealth", "Social", "Discipline"];
             const currentData = labels.map(l => currentStats.scores[l] || 0);
             const ghostData = labels.map(l => ghostStats.scores[l] || 0);
-
-            // Dynamic Max Scale: Find the highest score to scale the chart nicely
-            const maxScore = Math.max(...currentData, ...ghostData, 100); // Minimum 100 scale
+            const maxScore = Math.max(...currentData, ...ghostData, 100);
 
             radarChartInstance = new Chart(ctx, {
                 type: 'radar',
@@ -1146,7 +1160,7 @@
                         {
                             label: 'Current Month',
                             data: currentData,
-                            backgroundColor: 'rgba(99, 102, 241, 0.5)', // Indigo
+                            backgroundColor: 'rgba(99, 102, 241, 0.5)', 
                             borderColor: 'rgba(99, 102, 241, 1)',
                             borderWidth: 2,
                             pointBackgroundColor: 'rgba(99, 102, 241, 1)'
@@ -1154,11 +1168,11 @@
                         {
                             label: 'Last Month',
                             data: ghostData,
-                            backgroundColor: 'rgba(156, 163, 175, 0.2)', // Gray (Ghost)
+                            backgroundColor: 'rgba(156, 163, 175, 0.2)', 
                             borderColor: 'rgba(156, 163, 175, 0.5)',
                             borderWidth: 1,
                             pointBackgroundColor: 'transparent',
-                            pointBorderColor: 'transparent' // Hide points for ghost to keep it clean
+                            pointBorderColor: 'transparent' 
                         }
                     ]
                 },
@@ -1167,50 +1181,38 @@
                         r: {
                             angleLines: { color: 'rgba(0,0,0,0.1)' },
                             grid: { color: 'rgba(0,0,0,0.1)' },
-                            pointLabels: {
-                                font: { size: 12, weight: 'bold' },
-                                color: '#374151'
-                            },
+                            pointLabels: { font: { size: 12, weight: 'bold' }, color: '#374151' },
                             suggestedMin: 0,
-                            suggestedMax: maxScore + 20 // Add breathing room
+                            suggestedMax: maxScore + 20
                         }
                     },
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    }
+                    plugins: { legend: { position: 'bottom' } }
                 }
             });
 
-            // 3. Update Rank & XP UI
+            // Update Rank UI
             const totalXP = currentStats.total;
             let rank = "Novice";
             let progressPercent = 0;
-
-            if (totalXP < 500) {
-                rank = "Novice";
-                progressPercent = (totalXP / 500) * 100;
-            } else if (totalXP < 1500) {
-                rank = "Apprentice";
-                progressPercent = ((totalXP - 500) / 1000) * 100;
-            } else if (totalXP < 3000) {
-                rank = "Consistent";
-                progressPercent = ((totalXP - 1500) / 1500) * 100;
-            } else {
-                rank = "Master";
-                progressPercent = 100;
-            }
+            if (totalXP < 500) { rank = "Novice"; progressPercent = (totalXP / 500) * 100; } 
+            else if (totalXP < 1500) { rank = "Apprentice"; progressPercent = ((totalXP - 500) / 1000) * 100; } 
+            else if (totalXP < 3000) { rank = "Consistent"; progressPercent = ((totalXP - 1500) / 1500) * 100; } 
+            else { rank = "Master"; progressPercent = 100; }
 
             document.getElementById('character-rank-title').textContent = rank;
             document.getElementById('total-xp-display').textContent = totalXP;
             document.getElementById('xp-bar').style.width = `${progressPercent}%`;
 
-            // Update individual score boxes
             labels.forEach(l => {
                 const el = document.getElementById(`score-${l.toLowerCase()}`);
                 if(el) el.textContent = currentStats.scores[l] || 0;
             });
-        }
 
+            // --- Part 2: NEW History Chart Logic ---
+            setupHistoryChartListeners();
+            renderHistoryChart('weekly'); // Default view
+        }
+        
         async function calculateMonthStats(monthOffset) {
             const scores = { "Vitality": 0, "Intellect": 0, "Spirit": 0, "Wealth": 0, "Social": 0, "Discipline": 0 };
             let total = 0;
@@ -1902,6 +1904,194 @@
                 }
             }
         });
+
+        // --- NEW: History Chart Functions ---
+
+        function setupHistoryChartListeners() {
+            document.querySelectorAll('.history-filter-btn').forEach(btn => {
+                // Remove old listeners to prevent duplicates (simple cloning trick)
+                const newBtn = btn.cloneNode(true);
+                btn.parentNode.replaceChild(newBtn, btn);
+                
+                newBtn.addEventListener('click', (e) => {
+                    // Update UI classes
+                    document.querySelectorAll('.history-filter-btn').forEach(b => {
+                        b.classList.remove('bg-white', 'shadow-sm', 'text-blue-600');
+                        b.classList.add('text-gray-500', 'hover:bg-white');
+                    });
+                    e.target.classList.remove('text-gray-500', 'hover:bg-white');
+                    e.target.classList.add('bg-white', 'shadow-sm', 'text-blue-600');
+                    
+                    // Render Chart
+                    renderHistoryChart(e.target.dataset.range);
+                });
+            });
+        }
+
+        async function renderHistoryChart(range) {
+            const ctx = document.getElementById('history-chart').getContext('2d');
+            
+            // Show loading state on chart if possible, or just wait
+            if (historyChartInstance) historyChartInstance.destroy();
+
+            // 1. Fetch Data based on range
+            const rawData = await fetchAllYearData(); // Reusing your existing function
+            const processedData = processHistoryData(rawData, range);
+
+            // 2. Define Colors for Categories
+            const colors = {
+                "Vitality": "rgb(239, 68, 68)",   // Red
+                "Intellect": "rgb(59, 130, 246)", // Blue
+                "Spirit": "rgb(168, 85, 247)",    // Purple
+                "Wealth": "rgb(34, 197, 94)",     // Green
+                "Social": "rgb(234, 179, 8)",     // Yellow
+                "Discipline": "rgb(107, 114, 128)" // Gray
+            };
+
+            const datasets = Object.keys(processedData.scores).map(category => ({
+                label: category,
+                data: processedData.scores[category],
+                borderColor: colors[category] || '#000',
+                backgroundColor: 'transparent',
+                borderWidth: 2,
+                tension: 0.3, // Smooth curves
+                pointRadius: range === 'daily' ? 2 : 4
+            }));
+
+            historyChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: processedData.labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        y: { beginAtZero: true, grid: { borderDash: [2, 4] } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } },
+                        tooltip: { 
+                            callbacks: {
+                                footer: (items) => {
+                                    const total = items.reduce((a, b) => a + b.parsed.y, 0);
+                                    return 'Total XP: ' + total;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function processHistoryData(history, range) {
+            const labels = [];
+            const scores = { "Vitality": [], "Intellect": [], "Spirit": [], "Wealth": [], "Social": [], "Discipline": [] };
+            
+            // Sort weeks to ensure chronological order
+            const sortedWeekIds = Object.keys(history).sort();
+            
+            if (range === 'weekly' || range === 'yearly') {
+                // Show last 12 weeks for 'weekly', or all available for 'yearly'
+                const limit = range === 'weekly' ? 12 : 52; 
+                const relevantWeeks = sortedWeekIds.slice(-limit);
+
+                relevantWeeks.forEach(weekId => {
+                    labels.push(weekId.split('-')[1]); // Label is "W48"
+                    const weekScores = calculateScoreForObject(history[weekId]);
+                    Object.keys(scores).forEach(cat => scores[cat].push(weekScores[cat]));
+                });
+            } 
+            else if (range === 'monthly') {
+                // Aggregate by month
+                const monthMap = {}; // { "Jan": { Vitality: 10, ... } }
+                
+                sortedWeekIds.forEach(weekId => {
+                    // Approximate month from Week ID
+                    const year = parseInt(weekId.split('-')[0]);
+                    const week = parseInt(weekId.split('-W')[1]);
+                    const simpleDate = new Date(year, 0, 1 + (week - 1) * 7);
+                    const monthName = simpleDate.toLocaleString('default', { month: 'short' });
+                    
+                    if (!monthMap[monthName]) monthMap[monthName] = { "Vitality": 0, "Intellect": 0, "Spirit": 0, "Wealth": 0, "Social": 0, "Discipline": 0 };
+                    
+                    const weekScores = calculateScoreForObject(history[weekId]);
+                    Object.keys(scores).forEach(cat => monthMap[monthName][cat] += weekScores[cat]);
+                });
+
+                Object.keys(monthMap).slice(-12).forEach(month => { // Last 12 months
+                    labels.push(month);
+                    Object.keys(scores).forEach(cat => scores[cat].push(monthMap[month][cat]));
+                });
+            }
+            else if (range === 'daily') {
+                // Last 14 days logic
+                // We need to iterate weeks, then days inside weeks
+                const lastWeeks = sortedWeekIds.slice(-3); // Get last 3 weeks to cover enough days
+                const dailyData = [];
+
+                lastWeeks.forEach(weekId => {
+                    const weekData = history[weekId];
+                    const [y, w] = weekId.split('-W').map(Number);
+                    
+                    for(let d=0; d<7; d++) {
+                        // Calculate Date string
+                        const simpleDate = new Date(y, 0, 1 + (w - 1) * 7);
+                        simpleDate.setDate(simpleDate.getDate() + (d - simpleDate.getDay())); // Adjust to correct day
+                        const dateStr = simpleDate.getDate() + '/' + (simpleDate.getMonth()+1);
+
+                        // Calculate score for this specific day
+                        const dayScores = { "Vitality": 0, "Intellect": 0, "Spirit": 0, "Wealth": 0, "Social": 0, "Discipline": 0 };
+                        
+                        Object.keys(weekData).forEach(habitKey => {
+                            if(habitKey === 'todos' || habitKey === 'journal' || habitKey === 'hourlyLog' || habitKey === 'failureLog') return;
+                            
+                            const attribute = ATTRIBUTE_MAP[habitKey];
+                            if (!attribute) return;
+                            
+                            const val = weekData[habitKey][d];
+                            if(val === true || (val && val !== "")) {
+                                dayScores[attribute] += 10;
+                            }
+                        });
+                        dailyData.push({ date: dateStr, scores: dayScores });
+                    }
+                });
+
+                // Take last 14 days
+                dailyData.slice(-14).forEach(entry => {
+                    labels.push(entry.date);
+                    Object.keys(scores).forEach(cat => scores[cat].push(entry.scores[cat]));
+                });
+            }
+
+            return { labels, scores };
+        }
+
+        function calculateScoreForObject(weekData) {
+            const totals = { "Vitality": 0, "Intellect": 0, "Spirit": 0, "Wealth": 0, "Social": 0, "Discipline": 0 };
+            
+            Object.keys(weekData).forEach(habitKey => {
+                if(habitKey === 'todos' || habitKey === 'journal' || habitKey === 'hourlyLog' || habitKey === 'failureLog') return;
+
+                const attribute = ATTRIBUTE_MAP[habitKey];
+                if (!attribute) return;
+
+                const values = weekData[habitKey];
+                if (Array.isArray(values)) {
+                    values.forEach(val => {
+                        if(val === true || (val && val !== "")) {
+                            totals[attribute] += 10;
+                        }
+                    });
+                }
+            });
+            return totals;
+        }
     </script>
 </body>
 </html>
+
