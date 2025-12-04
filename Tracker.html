@@ -3,75 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Habit Tracker - Hexagon Edition</title>
+    <title>Level Up: Hexagon Habit Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f4f7f6;
-            padding-bottom: 80px; 
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; padding-bottom: 80px; }
         .custom-select {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
+            -webkit-appearance: none; -moz-appearance: none; appearance: none;
             background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>');
-            background-position: right 0.5rem center;
-            background-repeat: no-repeat;
-            background-size: 1.5em 1.5em;
-            padding-right: 2.5rem;
+            background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem;
         }
         .loading-spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border-left-color: #09f;
-            animation: spin 1s ease infinite;
+            border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%;
+            border-left-color: #09f; animation: spin 1s ease infinite;
         }
-        .todo-item span {
-            word-break: break-word;
-        }
-        .day-btn.active, .view-btn.active {
-            border-color: #3b82f6; /* blue-500 */
-            background-color: #eff6ff; /* blue-50 */
-            color: #1e40af; /* blue-800 */
-            font-weight: 600;
-        }
-        .modal-backdrop {
-             background-color: rgba(0,0,0,0.5);
-        }
+        .day-btn.active, .view-btn.active { border-color: #3b82f6; background-color: #eff6ff; color: #1e40af; font-weight: 600; }
+        .modal-backdrop { background-color: rgba(0,0,0,0.5); }
         .points-animation {
-            position: absolute;
-            animation: points-pop 0.8s ease-out forwards;
-            font-weight: bold;
-            color: #22c55e; /* green-500 */
-            pointer-events: none;
+            position: absolute; animation: points-pop 0.8s ease-out forwards;
+            font-weight: bold; pointer-events: none; z-index: 10;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        @keyframes points-pop {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-30px) scale(1.2); opacity: 0; }
-        }
-        @keyframes fadeInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        .card {
-             transform: translateY(20px);
-             opacity: 0;
-             animation: fadeInUp 0.5s ease-out forwards;
-        }
-        .timeline-hour {
-            grid-template-columns: 50px 1fr;
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes points-pop { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-30px) scale(1.2); opacity: 0; } }
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+        .card { transform: translateY(20px); opacity: 0; animation: fadeInUp 0.5s ease-out forwards; }
+        .timeline-hour { grid-template-columns: 50px 1fr; }
     </style>
 </head>
 <body class="antialiased text-gray-800">
@@ -84,244 +41,182 @@
         <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-lg">
             <form id="login-form" class="space-y-6">
                 <h2 class="text-3xl font-bold text-center text-gray-900">Level Up Your Life</h2>
-                <div>
-                    <label for="login-email" class="text-sm font-medium text-gray-700">Email address</label>
-                    <input id="login-email" name="email" type="email" autocomplete="email" required class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div>
-                    <label for="login-password" class="text-sm font-medium text-gray-700">Password</label>
-                    <input id="login-password" name="password" type="password" autocomplete="current-password" required class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                </div>
+                <input id="login-email" type="email" placeholder="Email" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                <input id="login-password" type="password" placeholder="Password" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
                 <p id="login-error" class="text-sm text-red-600"></p>
-                <div>
-                    <button type="submit" class="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        Sign In
-                    </button>
-                </div>
-                <p class="text-sm text-center text-gray-600">
-                    No account? <a href="#" id="show-signup-link" class="font-medium text-blue-600 hover:text-blue-500">Sign up</a>
-                </p>
+                <button type="submit" class="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700">Sign In</button>
+                <p class="text-center"><a href="#" id="show-signup-link" class="text-blue-600">Sign up</a></p>
             </form>
-
             <form id="signup-form" class="hidden space-y-6">
-                <h2 class="text-3xl font-bold text-center text-gray-900">Create an Account</h2>
-                <div>
-                    <label for="signup-email" class="text-sm font-medium text-gray-700">Email address</label>
-                    <input id="signup-email" name="email" type="email" autocomplete="email" required class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div>
-                    <label for="signup-password" class="text-sm font-medium text-gray-700">Password</label>
-                    <input id="signup-password" name="password" type="password" autocomplete="new-password" required class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                </div>
+                <h2 class="text-3xl font-bold text-center">Create Account</h2>
+                <input id="signup-email" type="email" placeholder="Email" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                <input id="signup-password" type="password" placeholder="Password" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
                 <p id="signup-error" class="text-sm text-red-600"></p>
-                <div>
-                    <button type="submit" class="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        Sign Up
-                    </button>
-                </div>
-                <p class="text-sm text-center text-gray-600">
-                    Already have an account? <a href="#" id="show-login-link" class="font-medium text-blue-600 hover:text-blue-500">Log in</a>
-                </p>
+                <button type="submit" class="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700">Sign Up</button>
+                <p class="text-center"><a href="#" id="show-login-link" class="text-blue-600">Log in</a></p>
             </form>
         </div>
     </div>
 
     <div id="app-container" class="hidden">
         <div class="container mx-auto p-4 md:p-8">
-            <header class="text-center mb-8">
+            <header class="text-center mb-6">
                 <div class="mb-2">
                      <span id="rank-badge" class="inline-block px-4 py-1 rounded-full bg-yellow-100 text-yellow-800 font-bold text-sm tracking-wide uppercase shadow-sm">Novice</span>
                 </div>
                 <h1 class="text-4xl font-bold text-gray-900">The Six Pillars</h1>
-                <p class="text-md text-gray-600 mt-2" id="current-week-display">Your journey to consistency starts now.</p>
+                <p class="text-md text-gray-600 mt-2" id="current-week-display">Loading...</p>
                 
                 <div class="flex justify-center my-4 space-x-2 border-b-2 border-gray-200 pb-2 overflow-x-auto">
-                     <button id="view-tracker-btn" class="view-btn flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 border-b-4 whitespace-nowrap">
-                        <span>Tracker</span>
-                     </button>
-                     <button id="view-log-btn" class="view-btn flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 border-b-4 whitespace-nowrap">
-                        <span>Hourly Log</span>
-                     </button>
-                     <button id="view-analytics-btn" class="view-btn flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 border-b-4 whitespace-nowrap">
-                        <span>Analytics</span>
-                    </button>
-                     <button id="view-settings-btn" class="view-btn flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 border-b-4 whitespace-nowrap">
-                        <span>Settings</span>
-                    </button>
+                     <button id="view-tracker-btn" class="view-btn px-4 py-2 rounded-lg text-gray-600 border-b-4">Tracker</button>
+                     <button id="view-log-btn" class="view-btn px-4 py-2 rounded-lg text-gray-600 border-b-4">Hourly Log</button>
+                     <button id="view-analytics-btn" class="view-btn px-4 py-2 rounded-lg text-gray-600 border-b-4">Analytics</button>
+                     <button id="view-settings-btn" class="view-btn px-4 py-2 rounded-lg text-gray-600 border-b-4">Settings</button>
                 </div>
                  <div class="flex items-center justify-center space-x-6 mt-4 flex-wrap gap-y-2">
-                    <div id="week-nav-controls" class="flex items-center space-x-4">
-                        <button id="prev-week-btn" class="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg shadow-sm hover:bg-gray-300 transition-colors">&larr;</button>
-                        <button id="today-btn" class="px-3 py-1 bg-blue-500 text-white font-semibold rounded-lg shadow-sm hover:bg-blue-600 transition-colors text-sm">Today</button>
-                        <button id="next-week-btn" class="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg shadow-sm hover:bg-gray-300 transition-colors">&rarr;</button>
+                    <div id="week-nav-controls" class="flex items-center space-x-2">
+                        <button id="prev-week-btn" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">&larr;</button>
+                        <button id="today-btn" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">Today</button>
+                        <button id="next-week-btn" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">&rarr;</button>
                     </div>
-                    <div class="flex items-center space-x-4">
-                         <div class="bg-blue-50 text-blue-800 font-bold py-1 px-3 rounded-lg shadow-sm border border-blue-100 text-sm">
-                            XP: <span id="discipline-score">0</span>
-                        </div>
-                        <button id="signout-btn" class="text-sm text-red-500 hover:text-red-700 font-semibold">Sign Out</button>
+                    <div class="flex items-center space-x-2">
+                         <div class="bg-blue-50 text-blue-800 font-bold py-1 px-3 rounded border border-blue-100 text-sm">XP: <span id="discipline-score">0</span></div>
+                        <button id="signout-btn" class="text-sm text-red-500 hover:underline">Sign Out</button>
                     </div>
                 </div>
-                 <p id="user-email" class="text-xs text-gray-400 mt-2"></p>
             </header>
 
             <div id="tracker-view">
                 <div class="bg-white rounded-2xl shadow-lg p-6 mb-6 card">
-                    <h2 class="text-xl font-bold mb-2">Weekly Completion</h2>
-                    <div class="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
-                        <div id="total-progress-bar" class="h-full text-center text-xs text-white bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-500" style="width: 0%;"></div>
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-8">
+                        <div class="w-full md:w-1/2">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-2xl font-bold text-gray-800">Attribute Stats</h3>
+                                    <p class="text-gray-500 text-xs">Blue = This Week. Grey = Last Week.</p>
+                                </div>
+                                <button id="refresh-dashboard-btn" class="text-xs bg-gray-100 px-2 py-1 rounded">Refresh Weather</button>
+                            </div>
+                            <div class="relative w-full h-64">
+                                <canvas id="hexagon-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-1/2 space-y-4">
+                             <div class="grid grid-cols-2 gap-2 text-xs">
+                                 <div id="weather-widget" class="bg-blue-50 p-2 rounded border border-blue-100">Loading Weather...</div>
+                                 <div id="prayer-widget" class="bg-green-50 p-2 rounded border border-green-100">Loading Prayer...</div>
+                             </div>
+                             <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                                 <h4 class="font-bold text-gray-900">Weekly Progress</h4>
+                                 <div class="w-full h-3 bg-gray-200 rounded-full mt-2">
+                                    <div id="total-progress-bar" class="h-full bg-blue-500 rounded-full transition-all duration-500" style="width: 0%;"></div>
+                                </div>
+                                <p id="total-progress-text" class="text-right text-xs mt-1 text-gray-500">0%</p>
+                             </div>
+                        </div>
                     </div>
-                    <p id="total-progress-text" class="text-center text-sm font-medium text-gray-600 mt-2">0% Complete</p>
                 </div>
 
-                <div id="day-nav-container" class="grid grid-cols-4 sm:grid-cols-7 text-center border-b-2 border-gray-200 mb-6">
-                    </div>
-
-                <div id="app-content" class="space-y-6">
-                    </div>
+                <div id="day-nav-container" class="grid grid-cols-4 sm:grid-cols-7 text-center border-b-2 border-gray-200 mb-6"></div>
+                <div id="app-content" class="space-y-6"></div>
             </div>
 
-             <div id="log-view" class="hidden">
+            <div id="log-view" class="hidden">
                  <div class="bg-white rounded-2xl shadow-lg p-6 card">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Hourly Log for <span id="hourly-log-date"></span></h2>
-                    <div id="hourly-log-content" class="space-y-2">Loading log...</div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Hourly Log: <span id="hourly-log-date"></span></h2>
+                    <div id="hourly-log-content" class="space-y-2">Loading...</div>
                 </div>
             </div>
             
             <div id="analytics-view" class="hidden">
-                 <div class="bg-white rounded-2xl shadow-lg p-6 card space-y-6">
+                 <div class="bg-white rounded-2xl shadow-lg p-6 card space-y-8">
                     <div>
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Todo Summary</h2>
-                        <canvas id="todo-chart"></canvas>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Task Completion History</h2>
+                        <div class="h-64"><canvas id="todo-chart"></canvas></div>
                     </div>
-                    <div id="streaks-container">
-                        <div id="analytics-prompt" class="text-center py-8 border-t">
-                             <h2 class="text-2xl font-bold text-gray-800 mb-4">Habit Streaks</h2>
-                             <button id="generate-report-btn" class="px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-sm hover:bg-blue-600 transition-colors">
-                                Generate Streaks Report
-                            </button>
-                        </div>
-                        <div id="streaks-content" class="hidden space-y-3"></div>
+                    <div id="streaks-container" class="border-t pt-6">
+                         <h2 class="text-2xl font-bold text-gray-800 mb-4">Habit Streaks</h2>
+                         <button id="generate-report-btn" class="w-full md:w-auto px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600">Generate Report</button>
+                         <div id="streaks-content" class="hidden grid grid-cols-1 md:grid-cols-3 gap-4 mt-4"></div>
                     </div>
                 </div>
             </div>
 
             <div id="settings-view" class="hidden">
                  <div class="bg-white rounded-2xl shadow-lg p-6 card">
-                    <div class="flex justify-between items-center mb-4 flex-wrap gap-4">
-                         <h2 class="text-2xl font-bold text-gray-800">Customize Pillars</h2>
-                         <div class="flex space-x-2">
-                            <button id="add-habit-btn" class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-sm hover:bg-blue-600 transition-colors text-sm">Add Habit</button>
-                            <button id="export-data-btn" class="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg shadow-sm hover:bg-green-600 transition-colors text-sm">Export Data</button>
+                    <div class="flex justify-between items-center mb-6">
+                         <h2 class="text-2xl font-bold text-gray-800">Manage Pillars</h2>
+                         <div class="space-x-2">
+                            <button id="add-habit-btn" class="px-3 py-1 bg-blue-500 text-white rounded text-sm">Add Habit</button>
+                            <button id="export-data-btn" class="px-3 py-1 bg-green-500 text-white rounded text-sm">Export Data</button>
                          </div>
                     </div>
-                    <div id="settings-content" class="space-y-4">Loading settings...</div>
+                    <div id="settings-content" class="space-y-4"></div>
                 </div>
             </div>
-
-            <footer class="text-center mt-12 py-6 border-t-2 border-gray-200">
-                <p class="text-gray-400 text-sm">"We are what we repeatedly do. Excellence, then, is not an act, but a habit."</p>
-            </footer>
         </div>
     </div>
     
-    <div id="habit-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-            <h3 id="modal-title" class="text-xl font-bold mb-4">Add Habit</h3>
-            <form id="habit-form">
+    <div id="habit-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4">Edit/Add Habit</h3>
+            <form id="habit-form" class="space-y-4">
                 <input type="hidden" id="habit-id">
-                <div class="mb-4">
-                    <label for="habit-name" class="block text-sm font-medium text-gray-700">Habit Name</label>
-                    <input type="text" id="habit-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-blue-500 focus:border-blue-500">
-                </div>
-                <div class="mb-4">
-                    <label for="habit-category" class="block text-sm font-medium text-gray-700">Pillar (Category)</label>
-                    <select id="habit-category" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-blue-500 focus:border-blue-500">
-                    </select>
-                </div>
-                 <div class="mb-4">
-                    <label for="habit-type" class="block text-sm font-medium text-gray-700">Type</label>
-                    <select id="habit-type" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="checkbox">Checkbox (Daily)</option>
-                        <option value="weekly-checkbox">Checkbox (Weekly)</option>
-                        <option value="select">Dropdown (Daily)</option>
-                    </select>
-                </div>
-                <div id="select-options-container" class="mb-4 hidden">
-                     <label for="habit-options" class="block text-sm font-medium text-gray-700">Dropdown Options (comma separated)</label>
-                    <input type="text" id="habit-options" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-blue-500 focus:border-blue-500">
-                </div>
+                <input type="text" id="habit-name" placeholder="Habit Name" class="w-full border p-2 rounded" required>
+                <select id="habit-category" class="w-full border p-2 rounded"></select>
+                <select id="habit-type" class="w-full border p-2 rounded">
+                    <option value="checkbox">Daily Checkbox</option>
+                    <option value="weekly-checkbox">Weekly Checkbox</option>
+                    <option value="select">Daily Dropdown</option>
+                </select>
+                <input type="text" id="habit-options" placeholder="Options (comma separated)" class="w-full border p-2 rounded hidden">
                 <div class="flex justify-end space-x-2">
-                    <button type="button" id="cancel-habit-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save Habit</button>
+                    <button type="button" id="cancel-habit-btn" class="px-4 py-2 bg-gray-200 rounded">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Save</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="failure-log-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-            <h3 id="failure-modal-title" class="text-xl font-bold mb-4">Log Failure</h3>
-            <form id="failure-log-form">
-                <input type="hidden" id="failure-habit-id">
-                <input type="hidden" id="failure-day-index">
-                 <div class="mb-4">
-                    <label for="failure-reason" class="block text-sm font-medium text-gray-700">Reason for missing this habit:</label>
-                    <textarea id="failure-reason" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-blue-500 focus:border-blue-500" rows="4"></textarea>
-                </div>
+    <div id="failure-log-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4">Log Failure</h3>
+            <form id="failure-log-form" class="space-y-4">
+                <input type="hidden" id="failure-habit-id"><input type="hidden" id="failure-day-index">
+                <textarea id="failure-reason" class="w-full border p-2 rounded" rows="3" placeholder="Why did you miss this?"></textarea>
                 <div class="flex justify-end space-x-2">
-                    <button type="button" id="cancel-failure-log-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save Reason</button>
+                    <button type="button" id="cancel-failure-log-btn" class="px-4 py-2 bg-gray-200 rounded">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Save</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="hourly-log-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-40">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-            <h3 id="hourly-log-modal-title" class="text-xl font-bold mb-4">Log Activity</h3>
-            <form id="hourly-log-form">
-                <input type="hidden" id="hourly-log-hour">
-                <input type="hidden" id="hourly-log-day">
-                 <div class="mb-4">
-                    <label for="hourly-log-activity" class="block text-sm font-medium text-gray-700">Activity:</label>
-                    <textarea id="hourly-log-activity" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-blue-500 focus:border-blue-500" rows="3"></textarea>
-                </div>
-                <div class="mb-4">
-                    <label for="hourly-log-category" class="block text-sm font-medium text-gray-700">Category:</label>
-                    <select id="hourly-log-category" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-blue-500 focus:border-blue-500"></select>
-                </div>
+    <div id="hourly-log-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4">Log Activity</h3>
+            <form id="hourly-log-form" class="space-y-4">
+                <input type="hidden" id="hourly-log-hour"><input type="hidden" id="hourly-log-day">
+                <textarea id="hourly-log-activity" class="w-full border p-2 rounded" rows="2" placeholder="What did you do?"></textarea>
+                <select id="hourly-log-category" class="w-full border p-2 rounded"></select>
                 <div class="flex justify-end space-x-2">
-                    <button type="button" id="cancel-hourly-log-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save</button>
+                    <button type="button" id="cancel-hourly-log-btn" class="px-4 py-2 bg-gray-200 rounded">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Save</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div id="save-bar" class="fixed bottom-0 left-0 w-full bg-white border-t-2 border-blue-100 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] transform translate-y-full transition-transform duration-300 flex justify-between items-center z-50">
-        <div class="flex items-center space-x-2">
-            <span class="flex h-3 w-3 relative">
-                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-3 w-3 bg-yellow-500"></span>
-            </span>
-            <span class="text-gray-700 font-semibold text-sm">Unsaved changes</span>
-        </div>
-        <div class="flex space-x-2">
-             <button id="discard-changes-btn" class="px-3 py-1 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium text-sm">Discard</button>
-             <button id="global-save-btn" class="px-4 py-1 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-md transition-colors flex items-center space-x-2 text-sm">
-                <span>Save</span>
-             </button>
-        </div>
+    <div id="save-bar" class="fixed bottom-0 left-0 w-full bg-white border-t-2 border-blue-100 p-4 shadow-lg transform translate-y-full transition-transform duration-300 flex justify-between items-center z-50">
+        <div class="flex items-center space-x-2"><span class="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></span><span class="text-sm font-bold">Unsaved changes</span></div>
+        <div class="space-x-2"><button id="discard-changes-btn" class="text-red-500 text-sm">Discard</button><button id="global-save-btn" class="bg-blue-600 text-white px-4 py-1 rounded text-sm font-bold">Save</button></div>
     </div>
-
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- Firebase Configuration ---
         const firebaseConfig = {
             apiKey: "FIREBASE_API_KEY_PLACEHOLDER",
             authDomain: "FIREBASE_AUTH_DOMAIN_PLACEHOLDER",
@@ -330,807 +225,413 @@
             messagingSenderId: "FIREBASE_MESSAGING_SENDER_ID_PLACEHOLDER",
             appId: "FIREBASE_APP_ID_PLACEHOLDER"
         };
-        const appId = 'habit-tracker-hexagon'; // Changed app ID for new structure
-        
+        const appId = 'habit-tracker-hexagon';
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- State Variables ---
-        let userId = null;
-        let habitData = {};
-        let previousWeekHabitData = {}; // For Ghost Graph
-        let userHabitConfig = {};
-        let userConfig = { disciplineScore: 0 };
-        let unsubscribe = null;
-        let displayedDate = new Date();
-        let activeDayIndex = 0;
-        let currentView = 'tracker'; 
-        let todoChartInstance = null;
-        let hexagonChartInstance = null; // For the 6 Pillars
-        let hasUnsavedChanges = false; 
+        let userId = null, habitData = {}, prevHabitData = {}, userHabitConfig = {}, userConfig = { disciplineScore: 0 };
+        let unsubscribe = null, displayedDate = new Date(), activeDayIndex = 0, currentView = 'tracker';
+        let hexagonChart = null, todoChart = null, hasUnsavedChanges = false;
 
-        // --- DOM Elements ---
-        const authContainer = document.getElementById('auth-container');
-        const mainAppContainer = document.getElementById('app-container');
-        const loadingOverlay = document.getElementById('loading-overlay');
-        const userEmailDisplay = document.getElementById('user-email');
-        const loginForm = document.getElementById('login-form');
-        const signupForm = document.getElementById('signup-form');
-        const showSignupLink = document.getElementById('show-signup-link');
-        const showLoginLink = document.getElementById('show-login-link');
-        const signoutBtn = document.getElementById('signout-btn');
-        const dayNavContainer = document.getElementById('day-nav-container');
-        const appContent = document.getElementById('app-content');
-        const disciplineScoreDisplay = document.getElementById('discipline-score');
-        const rankBadge = document.getElementById('rank-badge');
-
-        const saveBar = document.getElementById('save-bar');
-        const globalSaveBtn = document.getElementById('global-save-btn');
-        const discardBtn = document.getElementById('discard-changes-btn');
-
-        const views = {
-            tracker: document.getElementById('tracker-view'),
-            log: document.getElementById('log-view'),
-            analytics: document.getElementById('analytics-view'),
-            settings: document.getElementById('settings-view')
-        };
-        const viewButtons = {
-            tracker: document.getElementById('view-tracker-btn'),
-            log: document.getElementById('view-log-btn'),
-            analytics: document.getElementById('view-analytics-btn'),
-            settings: document.getElementById('view-settings-btn')
-        };
-        const weekNavControls = document.getElementById('week-nav-controls');
-        
-        // Modals
-        const habitModal = document.getElementById('habit-modal');
-        const habitForm = document.getElementById('habit-form');
-        const modalTitle = document.getElementById('modal-title');
-        const addHabitBtn = document.getElementById('add-habit-btn');
-        const cancelHabitBtn = document.getElementById('cancel-habit-btn');
-        const failureLogModal = document.getElementById('failure-log-modal');
-        const failureLogForm = document.getElementById('failure-log-form');
-        const cancelFailureLogBtn = document.getElementById('cancel-failure-log-btn');
-        const hourlyLogModal = document.getElementById('hourly-log-modal');
-        const hourlyLogForm = document.getElementById('hourly-log-form');
-        const cancelHourlyLogBtn = document.getElementById('cancel-hourly-log-btn');
-        
-        // --- 1. THE SIX PILLARS CONFIGURATION ---
         const defaultHabits = {
-            "Vitality": [
-                { id: "v1", name: "Sleep (7-8hrs)", type: "checkbox" },
-                { id: "v2", name: "Hydration", type: "checkbox" },
-                { id: "v3", name: "Gym/Fitness", type: "checkbox" },
-                { id: "v4", name: "Calories", type: "checkbox" }
-            ],
-            "Intellect": [
-                { id: "i1", name: "CFA Study", type: "checkbox" },
-                { id: "i2", name: "Investments", type: "checkbox" },
-                { id: "i3", name: "SQL/PowerShell", type: "checkbox" }
-            ],
-            "Spirit": [
-                { id: "sp1", name: "Prayer", type: "checkbox" },
-                { id: "sp2", name: "Quran", type: "checkbox" },
-                { id: "sp3", name: "Dua", type: "checkbox" },
-                { id: "sp4", name: "Affirmations", type: "checkbox" }
-            ],
-            "Wealth": [
-                { id: "w1", name: "Spend < 6.67", type: "checkbox" },
-                { id: "w2", name: "Save Objective", type: "checkbox" }
-            ],
-            "Social": [
-                { id: "so1", name: "Family Time", type: "checkbox" },
-                { id: "so2", name: "Talk to 1 person", type: "checkbox" },
-                { id: "so3", name: "Weekly Gathering", type: "weekly-checkbox" }
-            ],
-            "Discipline": [
-                { id: "d1", name: "Make Bed (Tidy)", type: "checkbox" },
-                { id: "d2", name: "Daily Planning", type: "checkbox" },
-                { id: "d3", name: "Maintain Streak", type: "checkbox" }
-            ]
+            "Vitality": [{ id: "v1", name: "Sleep (7-8hrs)", type: "checkbox" }, { id: "v2", name: "Hydration", type: "checkbox" }, { id: "v3", name: "Gym/Fitness", type: "checkbox" }, { id: "v4", name: "Calories", type: "checkbox" }],
+            "Intellect": [{ id: "i1", name: "CFA Study", type: "checkbox" }, { id: "i2", name: "Investments", type: "checkbox" }, { id: "i3", name: "SQL/PowerShell", type: "checkbox" }],
+            "Spirit": [{ id: "sp1", name: "Prayer", type: "checkbox" }, { id: "sp2", name: "Quran", type: "checkbox" }, { id: "sp3", name: "Dua", type: "checkbox" }],
+            "Wealth": [{ id: "w1", name: "Spend < 6.67", type: "checkbox" }, { id: "w2", name: "Save Objective", type: "checkbox" }],
+            "Social": [{ id: "so1", name: "Family Time", type: "checkbox" }, { id: "so2", name: "Talk to 1 person", type: "checkbox" }, { id: "so3", name: "Weekly Gathering", type: "weekly-checkbox" }],
+            "Discipline": [{ id: "d1", name: "Make Bed", type: "checkbox" }, { id: "d2", name: "Daily Planning", type: "checkbox" }]
         };
         const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-        const hourlyLogCategories = {
-            "Work": "bg-blue-200", "Leisure": "bg-green-200", "Exercise": "bg-yellow-200",
-            "Learning": "bg-purple-200", "Family/Social": "bg-pink-200", "Chores": "bg-gray-200",
-            "Sleep": "bg-indigo-200", "Other": "bg-white",
-        };
+        const logCats = { "Work": "bg-blue-200", "Leisure": "bg-green-200", "Exercise": "bg-yellow-200", "Learning": "bg-purple-200", "Family": "bg-pink-200", "Sleep": "bg-indigo-200", "Other": "bg-gray-100" };
 
-
-        // --- Auth State Logic ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                authContainer.classList.add('hidden');
-                mainAppContainer.classList.remove('hidden');
-                loadingOverlay.classList.remove('hidden');
-                userId = user.uid;
-                userEmailDisplay.textContent = user.email;
-                
-                await loadUserConfig();
-
-                setActiveDayForCurrentWeek();
-                await updateViewForDate(); 
-                setupViewNavigation();
-                setupSaveHandlers();
-                updateRank(); // Initial Rank Check
-
+        // AUTH
+        onAuthStateChanged(auth, async (u) => {
+            if (u) {
+                document.getElementById('auth-container').classList.add('hidden');
+                document.getElementById('app-container').classList.remove('hidden');
+                userId = u.uid;
+                await loadConfig();
+                setActiveDay();
+                await loadData();
+                setupNav();
+                setupSave();
+                fetchWeather(); // Init weather
             } else {
-                authContainer.classList.remove('hidden');
-                mainAppContainer.classList.add('hidden');
-                if (unsubscribe) unsubscribe();
-                userId = null;
-                habitData = {};
-                loadingOverlay.classList.add('hidden');
+                document.getElementById('auth-container').classList.remove('hidden');
+                document.getElementById('app-container').classList.add('hidden');
             }
         });
 
-        // --- Save Handlers ---
-        function setupSaveHandlers() {
-            globalSaveBtn.addEventListener('click', async () => {
-                const btnContent = globalSaveBtn.innerHTML;
-                globalSaveBtn.innerHTML = `<span>Saving...</span>`;
-                globalSaveBtn.disabled = true;
-                await updateFirestore();
-                hasUnsavedChanges = false;
-                globalSaveBtn.innerHTML = `<span>Saved!</span>`;
-                setTimeout(() => {
-                    saveBar.classList.add('translate-y-full');
-                    globalSaveBtn.innerHTML = `<span>Save</span>`;
-                    globalSaveBtn.disabled = false;
-                }, 1000);
-            });
-
-            discardBtn.addEventListener('click', async () => {
-                if(confirm("Discard all unsaved changes?")) {
-                    hasUnsavedChanges = false;
-                    saveBar.classList.add('translate-y-full');
-                    await updateViewForDate(); // Reload from DB
-                    disciplineScoreDisplay.textContent = userConfig.disciplineScore;
-                }
-            });
-
-            window.addEventListener('beforeunload', (e) => {
-                if (hasUnsavedChanges) { e.preventDefault(); e.returnValue = ''; }
-            });
-        }
-
-        function markUnsaved() {
-            if (!hasUnsavedChanges) {
-                hasUnsavedChanges = true;
-                saveBar.classList.remove('translate-y-full');
-            }
-        }
-        
-        // --- User Configuration ---
-        async function loadUserConfig() {
-            const habitConfigRef = doc(db, `artifacts/${appId}/users/${userId}/config`, 'habits');
-            const habitDocSnap = await getDoc(habitConfigRef);
-            if (habitDocSnap.exists()) {
-                userHabitConfig = habitDocSnap.data();
-            } else {
-                userHabitConfig = JSON.parse(JSON.stringify(defaultHabits));
-                await setDoc(habitConfigRef, userHabitConfig);
-            }
-
-            const userConfigRef = doc(db, `artifacts/${appId}/users/${userId}/config`, 'user');
-            const userDocSnap = await getDoc(userConfigRef);
-            if(userDocSnap.exists()) {
-                userConfig = userDocSnap.data();
-            } else {
-                userConfig = { disciplineScore: 0 };
-                await setDoc(userConfigRef, userConfig);
-            }
-            disciplineScoreDisplay.textContent = userConfig.disciplineScore || 0;
+        // CORE LOGIC
+        async function loadConfig() {
+            let snap = await getDoc(doc(db, `artifacts/${appId}/users/${userId}/config`, 'habits'));
+            userHabitConfig = snap.exists() ? snap.data() : JSON.parse(JSON.stringify(defaultHabits));
+            snap = await getDoc(doc(db, `artifacts/${appId}/users/${userId}/config`, 'user'));
+            userConfig = snap.exists() ? snap.data() : { disciplineScore: 0 };
             updateRank();
         }
 
-        async function saveUserHabitConfig() {
-            if (!userId) return;
-            const configRef = doc(db, `artifacts/${appId}/users/${userId}/config`, 'habits');
-            await setDoc(configRef, userHabitConfig);
-        }
-        
-        function incrementScore(points) {
-            userConfig.disciplineScore = (userConfig.disciplineScore || 0) + points;
-            disciplineScoreDisplay.textContent = userConfig.disciplineScore;
-            updateRank();
-        }
-
-        // --- 4. GAMIFICATION: RANK LOGIC ---
-        function updateRank() {
-            const score = userConfig.disciplineScore || 0;
-            let rank = "Novice";
-            let colorClass = "bg-gray-100 text-gray-800";
-
-            if (score >= 3000) { rank = "Unstoppable"; colorClass = "bg-purple-100 text-purple-800"; }
-            else if (score >= 1500) { rank = "Consistent"; colorClass = "bg-blue-100 text-blue-800"; }
-            else if (score >= 500) { rank = "Apprentice"; colorClass = "bg-green-100 text-green-800"; }
-            else { rank = "Novice"; colorClass = "bg-yellow-100 text-yellow-800"; }
-
-            rankBadge.textContent = rank;
-            rankBadge.className = `inline-block px-4 py-1 rounded-full font-bold text-sm tracking-wide uppercase shadow-sm ${colorClass}`;
-        }
-
-        function showPointsAnimation(element, points) {
-            const pointsEl = document.createElement('span');
-            pointsEl.textContent = points > 0 ? `+${points}` : points;
-            pointsEl.className = 'points-animation';
-            pointsEl.style.color = points > 0 ? '#22c55e' : '#ef4444';
-            element.parentElement.style.position = 'relative';
-            element.parentElement.appendChild(pointsEl);
-            setTimeout(() => { pointsEl.remove(); }, 800);
-        }
-
-        // --- Auth Handlers (Shortened for brevity) ---
-        showSignupLink.addEventListener('click', (e) => { e.preventDefault(); loginForm.classList.add('hidden'); signupForm.classList.remove('hidden'); });
-        showLoginLink.addEventListener('click', (e) => { e.preventDefault(); signupForm.classList.add('hidden'); loginForm.classList.remove('hidden'); });
-        loginForm.addEventListener('submit', async (e) => { e.preventDefault(); try { await signInWithEmailAndPassword(auth, loginForm['login-email'].value, loginForm['login-password'].value); } catch (e) { document.getElementById('login-error').textContent = e.message; } });
-        signupForm.addEventListener('submit', async (e) => { e.preventDefault(); try { await createUserWithEmailAndPassword(auth, signupForm['signup-email'].value, signupForm['signup-password'].value); } catch (e) { document.getElementById('signup-error').textContent = e.message; } });
-        signoutBtn.addEventListener('click', async () => { await signOut(auth); });
-
-        // --- Date Logic ---
-        function getWeekNumber(d) {
-            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-            d.setUTCDate(d.getUTCDate() + 4 - d.getUTCDay());
-            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-            return [d.getUTCFullYear(), Math.ceil((((d - yearStart) / 86400000) + 1) / 7)];
-        }
-        function getDateOfWeek(w, y) {
-            const simple = new Date(y, 0, 1 + (w - 1) * 7);
-            const dow = simple.getDay();
-            simple.setDate(simple.getDate() - dow);
-            return simple;
-        }
-        function setActiveDayForCurrentWeek() {
-             const today = new Date();
-             const [currentYear, currentWeek] = getWeekNumber(today);
-             const [displayYear, displayWeek] = getWeekNumber(displayedDate);
-             activeDayIndex = (currentYear === displayYear && currentWeek === displayWeek) ? today.getDay() : 0;
-        }
-
-        async function updateViewForDate() {
-            if (!userId) return;
-            const [year, week] = getWeekNumber(displayedDate);
-            const weekId = `${year}-W${String(week).padStart(2, '0')}`;
-            document.getElementById('current-week-display').textContent = `Week ${week}, ${year}`;
+        async function loadData() {
+            const [y, w] = getWeekNumber(displayedDate);
+            const wId = `${y}-W${String(w).padStart(2,'0')}`;
+            document.getElementById('current-week-display').textContent = `Week ${w}, ${y}`;
             
-            // Calculate Previous Week ID for Ghost Graph
-            const prevDate = new Date(displayedDate);
-            prevDate.setDate(prevDate.getDate() - 7);
-            const [pYear, pWeek] = getWeekNumber(prevDate);
-            const prevWeekId = `${pYear}-W${String(pWeek).padStart(2, '0')}`;
+            // Prev week for Ghost Graph
+            const dPrev = new Date(displayedDate); dPrev.setDate(dPrev.getDate()-7);
+            const [py, pw] = getWeekNumber(dPrev);
+            const pwId = `${py}-W${String(pw).padStart(2,'0')}`;
+            try { const ps = await getDoc(doc(db, `artifacts/${appId}/users/${userId}/habits`, pwId)); prevHabitData = ps.exists() ? ps.data() : {}; } catch(e){}
 
-            // Fetch Data
-            await setupTracker(weekId, prevWeekId);
-            
-            // UI Button Logic
-            const nextWeekBtn = document.getElementById('next-week-btn');
-            const today = new Date();
-            const [currentYear, currentWeek] = getWeekNumber(today);
-            nextWeekBtn.disabled = year > currentYear || (year === currentYear && week >= currentWeek);
-            nextWeekBtn.classList.toggle('opacity-50', nextWeekBtn.disabled);
-        }
-
-        async function navigateWeeks(offset) { 
-            if(hasUnsavedChanges && !confirm("Discard unsaved changes?")) return;
-            hasUnsavedChanges = false;
-            saveBar.classList.add('translate-y-full');
-            displayedDate.setDate(displayedDate.getDate() + (offset * 7)); 
-            setActiveDayForCurrentWeek();
-            await updateViewForDate(); 
-        }
-        
-        // --- Firestore ---
-        async function setupTracker(weekId, prevWeekId) {
-            const docRef = doc(db, `artifacts/${appId}/users/${userId}/habits`, weekId);
-            const prevDocRef = doc(db, `artifacts/${appId}/users/${userId}/habits`, prevWeekId);
-            
-            // Get Previous Week Data (Ghost)
-            try {
-                const prevSnap = await getDoc(prevDocRef);
-                previousWeekHabitData = prevSnap.exists() ? prevSnap.data() : null;
-            } catch (e) { console.log("No previous week data"); }
-
-            if (unsubscribe) unsubscribe();
-            
-            // Listen to Current Week
-            unsubscribe = onSnapshot(docRef, (docSnap) => {
+            if(unsubscribe) unsubscribe();
+            unsubscribe = onSnapshot(doc(db, `artifacts/${appId}/users/${userId}/habits`, wId), (s) => {
                 if(!hasUnsavedChanges) {
-                    habitData = docSnap.exists() ? docSnap.data() : initializeEmptyHabitData();
+                    habitData = s.exists() ? s.data() : initHabitData();
                     renderApp();
-                    loadingOverlay.classList.add('hidden');
                 }
             });
         }
-        
-        function initializeEmptyHabitData() {
-            const data = {};
-            for (const category in userHabitConfig) {
-                userHabitConfig[category].forEach(habit => {
-                    const key = habit.id;
-                    if (habit.type === 'weekly-checkbox') data[key] = [false];
-                    else if (habit.type === 'checkbox') data[key] = Array(7).fill(false);
-                    else data[key] = Array(7).fill("");
-                });
-            }
-            data.journal = Array(7).fill("");
-            data.todos = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
-            data.failureLog = {};
-            data.hourlyLog = {}; 
-            return data;
+
+        function initHabitData() {
+            const d = { journal: Array(7).fill(""), todos: {}, failureLog: {}, hourlyLog: {} };
+            for(let i=0;i<7;i++) { d.todos[i]=[]; d.hourlyLog[i]=[]; }
+            for(const c in userHabitConfig) userHabitConfig[c].forEach(h => d[h.id] = (h.type==='weekly-checkbox') ? [false] : (h.type==='checkbox' ? Array(7).fill(false) : Array(7).fill("")));
+            return d;
         }
 
-        async function updateFirestore() {
-             if (!userId) return;
-             const [year, week] = getWeekNumber(displayedDate);
-             const weekId = `${year}-W${String(week).padStart(2, '0')}`;
-             
-             const docRef = doc(db, `artifacts/${appId}/users/${userId}/habits`, weekId);
-             const userConfigRef = doc(db, `artifacts/${appId}/users/${userId}/config`, 'user');
-
-             try { 
-                 await setDoc(docRef, habitData, { merge: true }); 
-                 await setDoc(userConfigRef, userConfig, { merge: true });
-             } 
-             catch (error) { console.error("Error saving:", error); alert("Failed to save."); }
+        async function saveData() {
+            const [y, w] = getWeekNumber(displayedDate);
+            await setDoc(doc(db, `artifacts/${appId}/users/${userId}/habits`, `${y}-W${String(w).padStart(2,'0')}`), habitData, { merge: true });
+            await setDoc(doc(db, `artifacts/${appId}/users/${userId}/config`, 'user'), userConfig, { merge: true });
         }
 
-        // --- View Logic ---
-        function setupViewNavigation() {
-            Object.keys(viewButtons).forEach(view => {
-                viewButtons[view].addEventListener('click', () => switchView(view));
-            });
-            switchView('tracker');
+        function markUnsaved() { hasUnsavedChanges = true; document.getElementById('save-bar').classList.remove('translate-y-full'); }
+        function setupSave() {
+            document.getElementById('global-save-btn').onclick = async () => {
+                document.getElementById('global-save-btn').textContent = "Saving...";
+                await saveData();
+                hasUnsavedChanges = false;
+                document.getElementById('global-save-btn').textContent = "Saved";
+                setTimeout(() => { document.getElementById('save-bar').classList.add('translate-y-full'); document.getElementById('global-save-btn').textContent = "Save"; }, 1000);
+            };
+            document.getElementById('discard-changes-btn').onclick = async () => { if(confirm("Discard?")) { hasUnsavedChanges = false; document.getElementById('save-bar').classList.add('translate-y-full'); await loadData(); } };
         }
 
-        function switchView(view) {
-            if(hasUnsavedChanges && view !== currentView && !confirm("Discard unsaved changes?")) return;
-            hasUnsavedChanges = false;
-            saveBar.classList.add('translate-y-full');
-            
-            currentView = view;
-            Object.keys(views).forEach(v => {
-                views[v].classList.toggle('hidden', v !== view);
-                viewButtons[v].classList.toggle('active', v === view);
-            });
-            weekNavControls.classList.toggle('hidden', view !== 'tracker' && view !== 'log');
-
-            if (view === 'log') renderHourlyLog();
-            if (view === 'analytics') {
-                document.getElementById('analytics-prompt').classList.remove('hidden');
-                document.getElementById('streaks-content').classList.add('hidden');
-                renderWeeklyTodoChart();
-            }
-            if (view === 'settings') renderSettings();
+        // GAMIFICATION
+        function updateRank() {
+            const s = userConfig.disciplineScore;
+            let r = "Novice", c = "bg-gray-100 text-gray-800";
+            if (s >= 3000) { r = "Unstoppable"; c = "bg-purple-100 text-purple-800"; }
+            else if (s >= 1500) { r = "Consistent"; c = "bg-blue-100 text-blue-800"; }
+            else if (s >= 500) { r = "Apprentice"; c = "bg-green-100 text-green-800"; }
+            document.getElementById('rank-badge').textContent = r; document.getElementById('rank-badge').className = `inline-block px-4 py-1 rounded-full font-bold text-sm uppercase shadow-sm ${c}`;
+            document.getElementById('discipline-score').textContent = s;
+        }
+        function addXP(el, amt) {
+            userConfig.disciplineScore += amt;
+            updateRank();
+            const anim = document.createElement('span'); anim.textContent = (amt>0?"+":"")+amt; anim.className = 'points-animation';
+            anim.style.color = amt>0 ? '#22c55e' : '#ef4444'; el.parentNode.appendChild(anim); setTimeout(()=>anim.remove(), 800);
         }
 
-        // --- Rendering ---
+        // RENDERING
         function renderApp() {
             if (currentView === 'tracker') {
-                renderDayNavigation();
-                renderContentForDay();
+                renderDashboard();
+                renderDayNav();
+                renderDayContent();
             } else if (currentView === 'log') {
-                renderDayNavigation();
+                renderDayNav();
                 renderHourlyLog();
             }
-            updateProgress();
         }
-        
-        function renderDayNavigation() {
-            dayNavContainer.innerHTML = '';
-            days.forEach((day, index) => {
-                const btn = document.createElement('button');
-                btn.textContent = day;
-                btn.className = `day-btn p-3 border-b-4 ${index === activeDayIndex ? 'active' : 'border-transparent text-gray-500 hover:border-gray-300'}`;
-                btn.addEventListener('click', () => { activeDayIndex = index; renderApp(); });
-                dayNavContainer.appendChild(btn);
+
+        function renderDayNav() {
+            const c = document.getElementById('day-nav-container'); c.innerHTML = '';
+            days.forEach((d, i) => {
+                const b = document.createElement('button'); b.textContent = d; b.className = `day-btn p-3 border-b-4 ${i === activeDayIndex ? 'active' : 'border-transparent text-gray-500'}`;
+                b.onclick = () => { activeDayIndex = i; renderApp(); }; c.appendChild(b);
             });
         }
 
-        function renderContentForDay() {
-            const today = new Date();
-            const isCurrentDay = activeDayIndex === today.getDay() && getWeekNumber(displayedDate).join('-') === getWeekNumber(today).join('-');
-
-            let html = `
-                <div class="card bg-white rounded-2xl shadow-lg p-6 mb-6">
-                    ${renderDashboard()}
-                </div>
-                <div class="card" style="animation-delay: 100ms;">${renderDayHabits(activeDayIndex)}</div>
+        function renderDayContent() {
+            const html = `
+                <div class="card">${renderHabitList(activeDayIndex)}</div>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-                    <div class="card" style="animation-delay: 200ms;">${renderDayTodos(activeDayIndex)}</div>
-                     <div class="card" style="animation-delay: 250ms;">
-                         <div class="bg-white rounded-2xl shadow-lg p-6 h-full">
-                            <h3 class="text-xl font-bold mb-2 text-gray-800">Journal</h3>
-                             <textarea data-day="${activeDayIndex}" class="journal-entry w-full h-32 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50 text-sm" placeholder="Reflect on your day...">${(habitData.journal && habitData.journal[activeDayIndex]) || ""}</textarea>
-                         </div>
+                    <div class="card h-full bg-white rounded-2xl shadow-lg p-6 flex flex-col">
+                        <h3 class="font-bold mb-4">Todos</h3>
+                        <ul id="todo-list" class="space-y-2 flex-grow">${renderTodos(activeDayIndex)}</ul>
+                        <div class="mt-4 flex gap-2"><input id="todo-input" class="border p-2 rounded w-full"><button id="add-todo" class="bg-blue-500 text-white px-4 rounded">Add</button></div>
                     </div>
-                </div>
-            `;
-            appContent.innerHTML = html;
-            
-            // Init Chart
-            renderHexagonChart();
-            addAppEventListeners();
-        }
-        
-        // --- 2. THE SIX PILLARS CHART LOGIC ---
-        function calculatePillarStats(dataToAnalyze) {
-            // Pillars: Vitality, Intellect, Spirit, Wealth, Social, Discipline
-            // We count "checks" this week.
-            const pillars = ["Vitality", "Intellect", "Spirit", "Wealth", "Social", "Discipline"];
-            const scores = [0, 0, 0, 0, 0, 0];
-            
-            if (!dataToAnalyze) return scores;
-
-            pillars.forEach((pillar, index) => {
-                const habits = userHabitConfig[pillar] || [];
-                let totalPossible = 0;
-                let totalAchieved = 0;
-
-                habits.forEach(habit => {
-                    const key = habit.id;
-                    const habitState = dataToAnalyze[key];
-                    if(!habitState) return;
-
-                    if(habit.type === 'weekly-checkbox') {
-                         totalPossible += 1;
-                         if(habitState[0]) totalAchieved += 1;
-                    } else if (habit.type === 'checkbox') {
-                         totalPossible += 7;
-                         totalAchieved += habitState.filter(Boolean).length;
-                    }
-                });
-                // Normalize to a score of 100 for the chart
-                scores[index] = totalPossible > 0 ? Math.round((totalAchieved / totalPossible) * 100) : 0;
-            });
-            return scores;
+                    <div class="card h-full bg-white rounded-2xl shadow-lg p-6">
+                        <h3 class="font-bold mb-2">Journal</h3>
+                        <textarea id="journal-input" data-day="${activeDayIndex}" class="w-full h-32 border p-2 rounded bg-gray-50">${habitData.journal[activeDayIndex]||""}</textarea>
+                    </div>
+                </div>`;
+            document.getElementById('app-content').innerHTML = html;
+            attachEvents();
         }
 
-        function renderHexagonChart() {
-            const ctx = document.getElementById('hexagon-chart');
-            if(!ctx) return;
-
-            const currentScores = calculatePillarStats(habitData);
-            const ghostScores = calculatePillarStats(previousWeekHabitData); // Returns 0s if no prev data
-
-            if(hexagonChartInstance) hexagonChartInstance.destroy();
-
-            hexagonChartInstance = new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: ["Vitality", "Intellect", "Spirit", "Wealth", "Social", "Discipline"],
-                    datasets: [
-                        {
-                            label: 'This Week (Current)',
-                            data: currentScores,
-                            backgroundColor: 'rgba(59, 130, 246, 0.5)', // Blue-500 with opacity
-                            borderColor: 'rgba(59, 130, 246, 1)',
-                            borderWidth: 2,
-                            pointBackgroundColor: 'rgba(59, 130, 246, 1)'
-                        },
-                        {
-                            label: 'Last Week (Ghost)',
-                            data: ghostScores,
-                            backgroundColor: 'transparent',
-                            borderColor: 'rgba(156, 163, 175, 0.5)', // Gray-400
-                            borderWidth: 2,
-                            borderDash: [5, 5],
-                            pointRadius: 0
-                        }
-                    ]
-                },
-                options: {
-                    scales: {
-                        r: {
-                            angleLines: { display: true },
-                            suggestedMin: 0,
-                            suggestedMax: 100,
-                            ticks: { display: false, stepSize: 20 }
-                        }
-                    },
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    }
-                }
-            });
-        }
-        
-        function renderDashboard() {
-            return `
-                <div class="flex flex-col md:flex-row items-center justify-between gap-8">
-                    <div class="w-full md:w-1/2">
-                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Character Stats</h3>
-                        <p class="text-gray-500 text-sm mb-4">Level up your hexagon by completing habits.</p>
-                        <div class="relative w-full h-64">
-                            <canvas id="hexagon-chart"></canvas>
+        function renderHabitList(day) {
+            let h = '<div class="bg-white rounded-2xl shadow-lg p-6 space-y-4">';
+            Object.keys(userHabitConfig).forEach(cat => {
+                if(userHabitConfig[cat].length === 0) return;
+                h += `<div><h4 class="text-xs font-bold text-gray-400 uppercase mb-2">${cat}</h4><div class="space-y-2">`;
+                userHabitConfig[cat].forEach(hab => {
+                    const k = hab.id;
+                    if(!habitData[k]) habitData[k] = hab.type==='checkbox'?Array(7).fill(false):Array(7).fill("");
+                    const val = hab.type==='weekly-checkbox'?habitData[k][0]:habitData[k][day];
+                    const fail = (habitData.failureLog[k] && habitData.failureLog[k][day]) ? "text-yellow-600" : "text-gray-300";
+                    
+                    h += `<div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                        <span>${hab.name}</span>
+                        <div class="flex items-center gap-2">
+                           ${hab.type!=='select' ? `<button class="text-xs ${fail} hover:text-red-500 fail-btn" data-id="${k}" data-day="${day}">⚠</button>` : ''}
+                           ${hab.type==='select' ? 
+                             `<select class="habit-inp border rounded text-sm w-32" data-key="${k}" data-day="${day}">${(hab.options||[]).map(o=>`<option ${o===val?'selected':''}>${o}</option>`).join('')}</select>` : 
+                             `<input type="checkbox" class="habit-inp w-5 h-5 text-blue-600" data-key="${k}" data-day="${day}" ${val?'checked':''}>`}
                         </div>
-                    </div>
-                    <div class="w-full md:w-1/2 grid grid-cols-1 gap-4">
-                         <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                            <h4 class="font-bold text-blue-900">Current Focus</h4>
-                            <p class="text-sm text-blue-700 mt-1">Fill the solid blue shape to expand your potential.</p>
-                         </div>
-                         <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                             <h4 class="font-bold text-gray-900">Ghost Graph</h4>
-                             <p class="text-sm text-gray-600 mt-1">The dotted line shows where you were last week. Beat your ghost!</p>
-                         </div>
-                    </div>
-                </div>
-            `;
-        }
-
-
-        // --- Render Helpers (Habits, Todos, Logs) ---
-        function renderDayHabits(dayIndex) {
-            let html = '<h3 class="text-xl font-bold mb-4 text-gray-800">Daily Rituals</h3><div class="space-y-4">';
-            // Group by Categories
-            Object.keys(userHabitConfig).forEach(category => {
-                if(category === "Weekly") return; // Skip Weekly here
-                
-                // Check if category has habits
-                if(userHabitConfig[category].length === 0) return;
-
-                html += `<div><h4 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">${category}</h4><div class="space-y-2">`;
-                userHabitConfig[category].forEach(habit => {
-                      const key = habit.id;
-                      if (!habitData[key]) { habitData[key] = habit.type === 'checkbox' ? Array(7).fill(false) : Array(7).fill(""); }
-                      const habitState = habitData[key][dayIndex];
-                      const failureReason = (habitData.failureLog && habitData.failureLog[key] && habitData.failureLog[key][dayIndex]) || "";
-                      
-                      html += `<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                        <label class="font-medium text-gray-700">${habit.name}</label>
-                        <div class="flex items-center space-x-2">`;
-
-                    if (!habitState && habit.type !== 'select') {
-                        html += `<button data-key="${key}" data-day="${dayIndex}" class="log-failure-btn text-xs ${failureReason ? 'text-yellow-600' : 'text-gray-400'} hover:underline">${failureReason ? 'Reason' : 'Fail'}</button>`;
-                    }
-
-                      if (habit.type === 'checkbox') {
-                          html += `<input type="checkbox" data-key="${key}" data-day="${dayIndex}" class="h-6 w-6 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer habit-input" ${habitState ? 'checked' : ''}>`;
-                      } else if (habit.type === 'select') {
-                          html += `<select data-key="${key}" data-day="${dayIndex}" class="custom-select rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-1.5 w-32 habit-input">${(habit.options || []).map(opt => `<option value="${opt}" ${opt === (habitState || "") ? 'selected' : ''}>${opt || '-'}</option>`).join('')}</select>`;
-                      }
-                      html += `</div></div>`;
+                    </div>`;
                 });
-                html += `</div></div>`;
+                h += '</div></div>';
             });
-            return html;
+            return h + '</div>';
         }
 
-        function renderDayTodos(dayIndex) {
-            let html = `<div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col h-full">
-                <h3 class="text-xl font-bold mb-4 text-gray-800">Todo List</h3>
-                <ul id="todo-list" class="space-y-2 flex-grow min-h-[150px]">
-                    ${renderSingleDayTodos(dayIndex)}
-                </ul>
-                <div class="mt-4 flex space-x-2">
-                    <input type="text" id="todo-input" placeholder="New task..." class="flex-grow w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
-                    <button id="add-todo-btn" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 text-sm">Add</button>
-                </div>
-            </div>`;
-            return html;
+        function renderTodos(day) {
+            return (habitData.todos[day]||[]).map((t,i) => `
+                <li class="flex justify-between bg-gray-50 p-2 rounded">
+                    <div class="flex gap-2"><input type="checkbox" class="todo-chk" data-i="${i}" ${t.completed?'checked':''}> <span class="${t.completed?'line-through text-gray-400':''}">${t.text}</span></div>
+                    <button class="text-red-400 del-todo" data-i="${i}">×</button>
+                </li>`).join('') || '<li class="text-gray-400 italic text-sm">No tasks</li>';
         }
 
-        function renderSingleDayTodos(dayIndex) {
-            const dayTodos = (habitData.todos && habitData.todos[dayIndex]) || [];
-            if (dayTodos.length === 0) return `<li class="text-xs text-gray-400 text-center italic pt-4">No quests for today.</li>`;
-            return dayTodos.map((todo, todoIndex) => `
-                <li class="todo-item flex items-center justify-between bg-gray-50 p-2 rounded-lg">
-                    <div class="flex items-center flex-grow">
-                         <input type="checkbox" data-index="${todoIndex}" class="todo-checkbox h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" ${todo.completed ? 'checked' : ''}>
-                         <span class="text-sm mx-2 ${todo.completed ? 'line-through text-gray-400' : 'text-gray-700'}">${todo.text}</span>
-                    </div>
-                    <button data-index="${todoIndex}" class="delete-todo-btn text-gray-400 hover:text-red-500 font-bold px-2">&times;</button>
-                </li>
-            `).join('');
+        function renderDashboard() {
+            // Hexagon Logic
+            const ctx = document.getElementById('hexagon-chart');
+            if(ctx) {
+                const getScores = (data) => ["Vitality","Intellect","Spirit","Wealth","Social","Discipline"].map(c => {
+                    let tot=0, act=0;
+                    (userHabitConfig[c]||[]).forEach(h => {
+                        if(!data[h.id]) return;
+                        if(h.type==='weekly-checkbox'){ tot++; if(data[h.id][0]) act++; }
+                        else { tot+=7; act += (h.type==='checkbox' ? data[h.id].filter(Boolean).length : data[h.id].filter(v=>v).length); }
+                    });
+                    return tot?Math.round((act/tot)*100):0;
+                });
+                if(hexagonChart) hexagonChart.destroy();
+                hexagonChart = new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: ["Vitality","Intellect","Spirit","Wealth","Social","Discipline"],
+                        datasets: [
+                            { label: 'Current', data: getScores(habitData), backgroundColor: 'rgba(59,130,246,0.5)', borderColor: '#3b82f6', borderWidth: 2 },
+                            { label: 'Last Week', data: getScores(prevHabitData), borderColor: '#9ca3af', borderDash: [5,5], borderWidth: 2, backgroundColor: 'transparent', pointRadius: 0 }
+                        ]
+                    },
+                    options: { scales: { r: { suggestedMin: 0, suggestedMax: 100, ticks: { display: false } } }, plugins: { legend: { position: 'bottom' } } }
+                });
+                
+                // Progress Bar
+                const cur = getScores(habitData).reduce((a,b)=>a+b,0), max = 600;
+                const pct = Math.round((cur/max)*100);
+                document.getElementById('total-progress-bar').style.width = `${pct}%`;
+                document.getElementById('total-progress-text').textContent = `${pct}% Complete`;
+            }
         }
 
         function renderHourlyLog() {
-            const logDate = new Date(displayedDate);
-            logDate.setDate(logDate.getDate() - (logDate.getDay() - activeDayIndex));
-            document.getElementById('hourly-log-date').textContent = logDate.toLocaleDateString();
+            const d = activeDayIndex;
+            const hLog = document.getElementById('hourly-log-content'); hLog.innerHTML = '';
+            const dt = new Date(displayedDate); dt.setDate(dt.getDate() - (dt.getDay() - d));
+            document.getElementById('hourly-log-date').textContent = dt.toLocaleDateString();
             
-            const contentDiv = document.getElementById('hourly-log-content');
-            let html = '';
-            
-            if(!habitData.hourlyLog || !habitData.hourlyLog[activeDayIndex]) {
-                 if(!habitData.hourlyLog) habitData.hourlyLog = {};
-                 habitData.hourlyLog[activeDayIndex] = Array(24).fill({});
+            for(let i=0; i<24; i++) {
+                const ent = (habitData.hourlyLog[d] && habitData.hourlyLog[d][i]) || {};
+                const color = logCats[ent.category] || "bg-white";
+                hLog.innerHTML += `<div class="timeline-hour grid gap-2 items-center text-sm">
+                    <span class="text-gray-400 text-right">${i}:00</span>
+                    <div class="log-slot border rounded p-2 cursor-pointer hover:opacity-80 ${color}" data-h="${i}">${ent.activity || '<span class="text-gray-300">Log...</span>'}</div>
+                </div>`;
             }
-            const dayLog = habitData.hourlyLog[activeDayIndex];
-
-            for (let i = 0; i < 24; i++) {
-                const time = `${String(i).padStart(2, '0')}:00`;
-                const logEntry = dayLog[i] || {};
-                const category = logEntry.category || 'Other';
-                const activity = logEntry.activity || '';
-                const bgColor = hourlyLogCategories[category];
-
-                html += `
-                    <div class="timeline-hour grid gap-2 items-center">
-                        <span class="text-xs font-medium text-gray-400 text-right">${time}</span>
-                        <div data-hour="${i}" data-day="${activeDayIndex}" class="hourly-log-slot col-span-1 w-full p-2 border border-gray-100 rounded-lg shadow-sm cursor-pointer ${bgColor} hover:opacity-80 transition-opacity">
-                           <p class="text-sm truncate text-gray-800">${activity || '<span class="text-gray-400 italic">Log activity...</span>'}</p>
-                        </div>
-                    </div>
-                `;
-            }
-            contentDiv.innerHTML = html;
-        }
-
-        // --- Event Listeners ---
-        function addAppEventListeners() {
-            // Habit Inputs
-            appContent.querySelectorAll('.habit-input').forEach(el => {
-                el.addEventListener('change', (e) => {
-                    const { key, day } = e.target.dataset;
-                    const dayIndex = parseInt(day);
-                    const previousState = habitData[key] ? habitData[key][dayIndex] : undefined;
-                    
-                    if (!habitData[key]) habitData[key] = el.type === 'checkbox' ? Array(7).fill(false) : Array(7).fill("");
-                    
-                    let points = 0;
-                    if (e.target.type === 'checkbox') {
-                        habitData[key][dayIndex] = e.target.checked;
-                        if (e.target.checked && !previousState) points = 10;
-                        else if (!e.target.checked && previousState) points = -10;
-                    } else {
-                        const hasValue = !!e.target.value;
-                        const hadValue = !!previousState;
-                        habitData[key][dayIndex] = e.target.value;
-                        if (hasValue && !hadValue) points = 10;
-                        else if (!hasValue && hadValue) points = -10;
-                    }
-                    
-                    if(points !== 0) {
-                        incrementScore(points);
-                        showPointsAnimation(e.target, points);
-                    }
-                    
-                    markUnsaved();
-                    updateProgress();
-                    // Update Hexagon in real-time
-                    if(hexagonChartInstance) {
-                         hexagonChartInstance.data.datasets[0].data = calculatePillarStats(habitData);
-                         hexagonChartInstance.update();
-                    }
-                });
-            });
-            
-             appContent.querySelectorAll('.log-failure-btn').forEach(btn => {
-                 btn.addEventListener('click', (e) => openFailureLogModal(e.target.dataset.key, e.target.dataset.day));
-             });
-
-            // Journal
-            const journalEl = appContent.querySelector('.journal-entry');
-            if (journalEl) {
-                journalEl.addEventListener('input', (e) => {
-                    if (!habitData.journal) habitData.journal = Array(7).fill("");
-                    habitData.journal[e.target.dataset.day] = e.target.value;
-                    markUnsaved();
-                });
-            }
-            
-            // Todos
-            const addTodoBtn = appContent.querySelector('#add-todo-btn');
-            if (addTodoBtn) {
-                addTodoBtn.addEventListener('click', () => {
-                    const input = appContent.querySelector('#todo-input');
-                    if (input && input.value.trim()) {
-                        if (!habitData.todos) habitData.todos = {0:[],1:[],2:[],3:[],4:[],5:[],6:[]};
-                        if (!habitData.todos[activeDayIndex]) habitData.todos[activeDayIndex] = [];
-                        habitData.todos[activeDayIndex].push({ text: input.value.trim(), completed: false });
-                        input.value = '';
-                        appContent.querySelector('#todo-list').innerHTML = renderSingleDayTodos(activeDayIndex);
-                        markUnsaved();
-                        addAppEventListeners();
-                    }
-                });
-            }
-             appContent.querySelectorAll('.todo-checkbox, .delete-todo-btn').forEach(el => {
-                el.addEventListener('click', (e) => {
-                    const index = parseInt(e.target.dataset.index);
-                    if (e.target.classList.contains('todo-checkbox')) {
-                         const wasCompleted = habitData.todos[activeDayIndex][index].completed;
-                         habitData.todos[activeDayIndex][index].completed = e.target.checked;
-                         if(e.target.checked && !wasCompleted) { incrementScore(5); }
-                         else if(!e.target.checked && wasCompleted) { incrementScore(-5); }
-                    } else {
-                         const wasCompleted = habitData.todos[activeDayIndex][index].completed;
-                         if(wasCompleted) incrementScore(-5);
-                         habitData.todos[activeDayIndex].splice(index, 1);
-                    }
-                    appContent.querySelector('#todo-list').innerHTML = renderSingleDayTodos(activeDayIndex);
-                    markUnsaved();
-                    addAppEventListeners();
-                });
+            document.querySelectorAll('.log-slot').forEach(b => b.onclick = () => {
+                const h = b.dataset.h;
+                const ent = (habitData.hourlyLog[d] && habitData.hourlyLog[d][h]) || {};
+                document.getElementById('hourly-log-hour').value = h; document.getElementById('hourly-log-day').value = d;
+                document.getElementById('hourly-log-activity').value = ent.activity||"";
+                document.getElementById('hourly-log-category').innerHTML = Object.keys(logCats).map(c=>`<option ${c===ent.category?'selected':''}>${c}</option>`).join('');
+                document.getElementById('hourly-log-modal').classList.remove('hidden');
             });
         }
         
-        // --- Modal Logics (Shortened) ---
-        function openFailureLogModal(id, day) { failureLogForm.reset(); document.getElementById('failure-habit-id').value = id; document.getElementById('failure-day-index').value = day; document.getElementById('failure-reason').value = (habitData.failureLog?.[id]?.[day] || ""); failureLogModal.classList.remove('hidden'); }
-        cancelFailureLogBtn.addEventListener('click', () => failureLogModal.classList.add('hidden'));
-        failureLogForm.addEventListener('submit', (e) => { e.preventDefault(); const id = document.getElementById('failure-habit-id').value; const day = document.getElementById('failure-day-index').value; if(!habitData.failureLog) habitData.failureLog={}; if(!habitData.failureLog[id]) habitData.failureLog[id]=Array(7).fill(""); habitData.failureLog[id][day]=document.getElementById('failure-reason').value; markUnsaved(); failureLogModal.classList.add('hidden'); renderContentForDay(); });
-        
-        views.log.addEventListener('click', (e) => { if (e.target.closest('.hourly-log-slot')) { const slot = e.target.closest('.hourly-log-slot'); openHourlyLogModal(slot.dataset.hour, slot.dataset.day); } });
-        function openHourlyLogModal(h, d) { hourlyLogForm.reset(); document.getElementById('hourly-log-hour').value=h; document.getElementById('hourly-log-day').value=d; const categorySelect=document.getElementById('hourly-log-category'); categorySelect.innerHTML=Object.keys(hourlyLogCategories).map(c=>`<option value="${c}">${c}</option>`).join(''); const entry=(habitData.hourlyLog?.[d]?.[h]||{}); document.getElementById('hourly-log-activity').value=entry.activity||''; categorySelect.value=entry.category||'Other'; hourlyLogModal.classList.remove('hidden'); }
-        cancelHourlyLogBtn.addEventListener('click', () => hourlyLogModal.classList.add('hidden'));
-        hourlyLogForm.addEventListener('submit', (e) => { e.preventDefault(); const h=document.getElementById('hourly-log-hour').value; const d=document.getElementById('hourly-log-day').value; if(!habitData.hourlyLog) habitData.hourlyLog={}; if(!habitData.hourlyLog[d]) habitData.hourlyLog[d]=Array(24).fill({}); habitData.hourlyLog[d][h]={ activity:document.getElementById('hourly-log-activity').value, category:document.getElementById('hourly-log-category').value }; markUnsaved(); hourlyLogModal.classList.add('hidden'); renderHourlyLog(); });
+        // ANALYTICS & EXPORT (RESTORED)
+        function renderAnalytics() {
+            // Weekly Todo Chart
+            const ctx = document.getElementById('todo-chart');
+            const todoCounts = days.map((_, i) => (habitData.todos[i]||[]).length);
+            const todoDone = days.map((_, i) => (habitData.todos[i]||[]).filter(t=>t.completed).length);
+            
+            if(todoChart) todoChart.destroy();
+            todoChart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: days, datasets: [{ label: 'Done', data: todoDone, backgroundColor: '#3b82f6' }, { label: 'Total', data: todoCounts, backgroundColor: '#e5e7eb' }] },
+                options: { scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } }
+            });
 
-        // --- Settings Logic ---
+            // Generate Streaks (Button Logic)
+            document.getElementById('generate-report-btn').onclick = async () => {
+                const btn = document.getElementById('generate-report-btn');
+                btn.textContent = "Calculating...";
+                const container = document.getElementById('streaks-content');
+                container.innerHTML = ''; container.classList.remove('hidden');
+                
+                // Fetch History (Simplified: checks last 4 weeks)
+                let streakData = {};
+                for(let i=0; i<4; i++) {
+                     const d = new Date(); d.setDate(d.getDate() - (i*7));
+                     const [y,w] = getWeekNumber(d);
+                     const s = await getDoc(doc(db, `artifacts/${appId}/users/${userId}/habits`, `${y}-W${String(w).padStart(2,'0')}`));
+                     if(s.exists()) streakData[i] = s.data();
+                }
+
+                // Simple Streak calc for first few habits
+                let html = '';
+                Object.values(userHabitConfig).flat().forEach(h => {
+                     if(h.type !== 'checkbox') return;
+                     let streak = 0, broken = false;
+                     // Check backwards from today
+                     for(let w=0; w<4; w++) {
+                         if(!streakData[w] || !streakData[w][h.id]) { broken=true; break; }
+                         for(let d=6; d>=0; d--) {
+                             if(w===0 && d > new Date().getDay()) continue; // Skip future days
+                             if(streakData[w][h.id][d]) streak++; else { broken=true; break; }
+                         }
+                         if(broken) break;
+                     }
+                     if(streak > 0) html += `<div class="bg-gray-50 p-4 rounded border"><div class="font-bold">${h.name}</div><div class="text-green-600 font-bold text-xl">${streak} Days 🔥</div></div>`;
+                });
+                container.innerHTML = html || "<div class='col-span-3 text-center text-gray-500'>No active streaks found. Start today!</div>";
+                btn.textContent = "Generate Report";
+            };
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ config: userHabitConfig, currentWeek: habitData }));
+            const anchor = document.createElement('a');
+            anchor.setAttribute("href", dataStr);
+            anchor.setAttribute("download", "habit_tracker_export.json");
+            document.body.appendChild(anchor); anchor.click(); anchor.remove();
+        }
+        document.getElementById('export-data-btn').onclick = exportData;
+
+        // EVENT ATTACHMENT
+        function attachEvents() {
+            document.querySelectorAll('.habit-inp').forEach(i => i.onchange = (e) => {
+                const {key, day} = e.target.dataset;
+                const prev = habitData[key][day];
+                habitData[key][day] = e.target.type==='checkbox' ? e.target.checked : e.target.value;
+                // XP Logic
+                if(e.target.type==='checkbox' && e.target.checked && !prev) addXP(e.target, 10);
+                else if(e.target.type==='checkbox' && !e.target.checked && prev) addXP(e.target, -10);
+                markUnsaved(); renderDashboard();
+            });
+            document.getElementById('add-todo').onclick = () => {
+                const t = document.getElementById('todo-input').value;
+                if(t) { habitData.todos[activeDayIndex].push({text:t, completed:false}); document.getElementById('todo-input').value=""; renderDayContent(); markUnsaved(); }
+            };
+            document.querySelectorAll('.todo-chk').forEach(c => c.onclick = (e) => {
+                const idx = e.target.dataset.i;
+                habitData.todos[activeDayIndex][idx].completed = e.target.checked;
+                if(e.target.checked) addXP(e.target, 5); else addXP(e.target, -5);
+                renderDayContent(); markUnsaved();
+            });
+            document.querySelectorAll('.del-todo').forEach(b => b.onclick = (e) => {
+                habitData.todos[activeDayIndex].splice(e.target.dataset.i, 1);
+                renderDayContent(); markUnsaved();
+            });
+            document.getElementById('journal-input').oninput = (e) => { habitData.journal[activeDayIndex] = e.target.value; markUnsaved(); };
+            document.querySelectorAll('.fail-btn').forEach(b => b.onclick = () => {
+                document.getElementById('failure-habit-id').value = b.dataset.id; document.getElementById('failure-day-index').value = b.dataset.day;
+                document.getElementById('failure-reason').value = (habitData.failureLog[b.dataset.id]&&habitData.failureLog[b.dataset.id][b.dataset.day])||"";
+                document.getElementById('failure-log-modal').classList.remove('hidden');
+            });
+        }
+        
+        // SETTINGS & MODAL EVENTS (Simplified)
         function renderSettings() {
-             const settingsContent = document.getElementById('settings-content');
-             let html = '';
-             for (const category in userHabitConfig) {
-                 html += `<div class="p-4 border border-gray-200 rounded-lg"><h3 class="text-lg font-bold mb-3 text-gray-700">${category}</h3><div class="space-y-2">`;
-                 userHabitConfig[category].forEach(habit => {
-                     html += `<div class="flex items-center justify-between p-2 bg-gray-50 rounded text-sm"><span>${habit.name}</span><button data-id="${habit.id}" class="delete-habit-btn text-red-500 hover:text-red-700">Delete</button></div>`;
-                 });
-                 html += '</div></div>';
-             }
-             settingsContent.innerHTML = html;
-             
-             document.getElementById('add-habit-btn').onclick = () => {
-                 habitForm.reset();
-                 document.getElementById('habit-category').innerHTML = Object.keys(userHabitConfig).map(c => `<option value="${c}">${c}</option>`).join('');
-                 habitModal.classList.remove('hidden');
-             };
-             document.getElementById('cancel-habit-btn').onclick = () => habitModal.classList.add('hidden');
-             document.querySelectorAll('.delete-habit-btn').forEach(btn => btn.onclick = async () => {
-                 if(confirm("Delete this habit?")) {
-                     for(const c in userHabitConfig) userHabitConfig[c] = userHabitConfig[c].filter(h => h.id !== btn.dataset.id);
-                     await saveUserHabitConfig();
-                     renderSettings();
-                 }
-             });
-        }
-        
-        habitForm.addEventListener('submit', async (e) => {
-             e.preventDefault();
-             const name = document.getElementById('habit-name').value;
-             const category = document.getElementById('habit-category').value;
-             const type = document.getElementById('habit-type').value;
-             const newHabit = { id: 'h'+Date.now(), name, type };
-             if(type === 'select') newHabit.options = document.getElementById('habit-options').value.split(',').map(s=>s.trim());
-             
-             userHabitConfig[category].push(newHabit);
-             await saveUserHabitConfig();
-             habitModal.classList.add('hidden');
-             renderSettings();
-        });
-        document.getElementById('habit-type').addEventListener('change', (e) => { document.getElementById('select-options-container').classList.toggle('hidden', e.target.value !== 'select'); });
-
-        function updateProgress() {
-            let total = 0, done = 0;
-            for (const c in userHabitConfig) {
-                userHabitConfig[c].forEach(h => {
-                    if(!habitData[h.id]) return;
-                    if(h.type==='weekly-checkbox') { total++; if(habitData[h.id][0]) done++; }
-                    else { total+=7; done += (h.type==='checkbox' ? habitData[h.id].filter(Boolean).length : habitData[h.id].filter(v=>v).length); }
-                });
+            const c = document.getElementById('settings-content'); c.innerHTML = '';
+            for(const cat in userHabitConfig) {
+                c.innerHTML += `<div class="p-3 border rounded"><h4 class="font-bold">${cat}</h4>${userHabitConfig[cat].map(h=>`<div class="flex justify-between text-sm py-1"><span>${h.name}</span><button class="text-red-500 del-h" data-id="${h.id}">Del</button></div>`).join('')}</div>`;
             }
-            const pct = total > 0 ? Math.round((done/total)*100) : 0;
-            document.getElementById('total-progress-bar').style.width = `${pct}%`;
-            document.getElementById('total-progress-text').textContent = `${pct}% Complete`;
+            document.querySelectorAll('.del-h').forEach(b=>b.onclick=async()=>{ if(confirm("Delete?")){ for(const k in userHabitConfig) userHabitConfig[k]=userHabitConfig[k].filter(h=>h.id!==b.dataset.id); await setDoc(doc(db,`artifacts/${appId}/users/${userId}/config`,'habits'), userHabitConfig); renderSettings(); }});
+        }
+        document.getElementById('add-habit-btn').onclick = () => {
+            document.getElementById('habit-category').innerHTML = Object.keys(userHabitConfig).map(c=>`<option>${c}</option>`).join('');
+            document.getElementById('habit-modal').classList.remove('hidden');
+        };
+        document.getElementById('habit-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const n=document.getElementById('habit-name').value, c=document.getElementById('habit-category').value, t=document.getElementById('habit-type').value;
+            const h = {id: 'h'+Date.now(), name:n, type:t};
+            if(t==='select') h.options = document.getElementById('habit-options').value.split(',');
+            userHabitConfig[c].push(h);
+            await setDoc(doc(db,`artifacts/${appId}/users/${userId}/config`,'habits'), userHabitConfig);
+            document.getElementById('habit-modal').classList.add('hidden'); renderSettings();
+        };
+        document.getElementById('habit-type').onchange = (e) => document.getElementById('habit-options').classList.toggle('hidden', e.target.value!=='select');
+        ['cancel-habit-btn','cancel-failure-log-btn','cancel-hourly-log-btn'].forEach(id => document.getElementById(id).onclick = () => document.querySelectorAll('.fixed').forEach(m => { if(m.id.includes('modal')) m.classList.add('hidden'); }));
+        document.getElementById('failure-log-form').onsubmit = (e) => {
+            e.preventDefault(); const id=document.getElementById('failure-habit-id').value, d=document.getElementById('failure-day-index').value;
+            if(!habitData.failureLog[id]) habitData.failureLog[id]=Array(7).fill("");
+            habitData.failureLog[id][d] = document.getElementById('failure-reason').value;
+            markUnsaved(); document.getElementById('failure-log-modal').classList.add('hidden'); renderDayContent();
+        };
+        document.getElementById('hourly-log-form').onsubmit = (e) => {
+            e.preventDefault(); const h=document.getElementById('hourly-log-hour').value, d=document.getElementById('hourly-log-day').value;
+            habitData.hourlyLog[d][h] = {activity:document.getElementById('hourly-log-activity').value, category:document.getElementById('hourly-log-category').value};
+            markUnsaved(); document.getElementById('hourly-log-modal').classList.add('hidden'); renderHourlyLog();
+        };
+
+        // NAVIGATION & INIT
+        function setupNav() {
+            Object.keys(viewButtons).forEach(k => {
+                document.getElementById(`view-${k}-btn`).onclick = () => {
+                    currentView = k; renderApp();
+                    if(k==='analytics') renderAnalytics();
+                    if(k==='settings') renderSettings();
+                    Object.keys(viewButtons).forEach(b => document.getElementById(`view-${b}-btn`).classList.toggle('active', b===k));
+                };
+            });
+            document.getElementById('prev-week-btn').onclick = () => { displayedDate.setDate(displayedDate.getDate()-7); loadData(); };
+            document.getElementById('next-week-btn').onclick = () => { displayedDate.setDate(displayedDate.getDate()+7); loadData(); };
+            document.getElementById('today-btn').onclick = () => { displayedDate = new Date(); loadData(); };
+            document.getElementById('refresh-dashboard-btn').onclick = fetchWeather;
+            // Sign in/out toggle logic
+            document.getElementById('show-signup-link').onclick = (e)=>{e.preventDefault();document.getElementById('login-form').classList.add('hidden');document.getElementById('signup-form').classList.remove('hidden');};
+            document.getElementById('show-login-link').onclick = (e)=>{e.preventDefault();document.getElementById('signup-form').classList.add('hidden');document.getElementById('login-form').classList.remove('hidden');};
+            document.getElementById('login-form').onsubmit = async(e)=>{e.preventDefault();try{await signInWithEmailAndPassword(auth,document.getElementById('login-email').value,document.getElementById('login-password').value);}catch(err){document.getElementById('login-error').textContent=err.message;}};
+            document.getElementById('signup-form').onsubmit = async(e)=>{e.preventDefault();try{await createUserWithEmailAndPassword(auth,document.getElementById('signup-email').value,document.getElementById('signup-password').value);}catch(err){document.getElementById('signup-error').textContent=err.message;}};
+            document.getElementById('signout-btn').onclick = () => signOut(auth);
         }
 
-        document.getElementById('prev-week-btn').addEventListener('click', () => navigateWeeks(-1));
-        document.getElementById('next-week-btn').addEventListener('click', () => navigateWeeks(1));
-        document.getElementById('today-btn').addEventListener('click', () => { 
-             const today = new Date();
-             if(getWeekNumber(displayedDate).join('-') !== getWeekNumber(today).join('-')) {
-                 if(hasUnsavedChanges && !confirm("Discard unsaved changes?")) return;
-                 hasUnsavedChanges = false;
-                 saveBar.classList.add('translate-y-full');
-                 displayedDate = today;
-                 setActiveDayForCurrentWeek();
-                 updateViewForDate();
-             } else {
-                 activeDayIndex = today.getDay();
-                 renderApp();
-             }
-        });
+        async function fetchWeather() {
+            if(!navigator.geolocation) return;
+            navigator.geolocation.getCurrentPosition(async p => {
+                try {
+                    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${p.coords.latitude}&longitude=${p.coords.longitude}&current=temperature_2m`);
+                    const d = await r.json();
+                    document.getElementById('weather-widget').textContent = `${d.current.temperature_2m}°C`;
+                } catch(e) { document.getElementById('weather-widget').textContent = "Weather Error"; }
+            });
+            // Dummy Prayer Times (Replace with API if needed)
+            const d = new Date().toISOString().split('T')[0];
+            document.getElementById('prayer-widget').textContent = "Fajr: 05:00, Maghrib: 18:00"; 
+        }
+
+        // HELPERS
+        function getWeekNumber(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - d.getUTCDay()); const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return [d.getUTCFullYear(), Math.ceil((((d - yearStart) / 86400000) + 1)/7)]; }
+        function setActiveDay() { const t = new Date(); const [cy, cw] = getWeekNumber(t); const [dy, dw] = getWeekNumber(displayedDate); activeDayIndex = (cy===dy && cw===dw) ? t.getDay() : 0; }
+        const viewButtons = { tracker:1, log:1, analytics:1, settings:1 };
 
     </script>
 </body>
