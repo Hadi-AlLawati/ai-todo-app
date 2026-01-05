@@ -1139,20 +1139,37 @@
         };
 
         // --- GAMIFICATION CONFIG ---
-        const ATTRIBUTE_MAP = {
-            // Vitality (Body)
-            "h1": "Vitality", "h2": "Vitality", "h3": "Vitality", "h4": "Vitality", "h5": "Vitality", "h6": "Vitality", "h7": "Vitality", "h8": "Vitality", "h9": "Vitality", "h10": "Vitality",
-            // Intellect (Mind)
-            "m1": "Intellect", "m2": "Intellect", "m3": "Intellect", "m4": "Intellect",
-            // Discipline (Consistency/Planning - moved from Mind)
-            "m5": "Discipline", "m8": "Discipline", "m9": "Discipline",
-            // Social (Connection - moved from Mind/Weekly)
-            "m6": "Social", "m7": "Social", "w1": "Social", "w2": "Social",
-            // Spirit (Soul)
-            "s1": "Spirit", "s2": "Spirit", "s3": "Spirit", "s4": "Spirit",
-            // Wealth (Budget) + Charity moved to Social based on balance
-            "b1": "Wealth", "w3": "Social" 
-        };
+        // --- GAMIFICATION CONFIG ---
+
+// HELPER: Determines Stat (Vitality, Intellect, etc.) based on Habit Category
+function getAttributeForHabit(habitId) {
+    let foundCategory = null;
+    let habitName = "";
+    
+    // 1. Find category from config
+    for (const cat in userHabitConfig) {
+        const found = userHabitConfig[cat].find(h => h.id === habitId);
+        if (found) {
+            foundCategory = cat;
+            habitName = found.name;
+            break;
+        }
+    }
+
+    // 2. Return Stat based on Category
+    if (foundCategory === 'Health') return 'Vitality';
+    if (foundCategory === 'Spirit') return 'Spirit';
+    if (foundCategory === 'Budget') return 'Wealth';
+    if (foundCategory === 'Weekly') return 'Social';
+    
+    if (foundCategory === 'Mind') {
+        if (habitName.includes('Discipline') || habitName.includes('Plan')) return 'Discipline';
+        if (habitName.includes('Family') || habitName.includes('Talk')) return 'Social';
+        return 'Intellect';
+    }
+
+    return 'Vitality'; // Fallback
+}
 
         const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const journalPrompts = [
@@ -2012,7 +2029,7 @@
         function processSingleDay(weekData, dayIndex, scores) {
             Object.keys(weekData).forEach(habitKey => {
                 if(habitKey === 'todos' || habitKey === 'journal' || habitKey === 'hourlyLog' || habitKey === 'failureLog') return;
-                const attribute = ATTRIBUTE_MAP[habitKey];
+                const attribute = getAttributeForHabit(habitKey);
                 if (!attribute) return;
 
                 const val = weekData[habitKey][dayIndex];
@@ -2025,7 +2042,7 @@
         function processWholeWeek(weekData, scores) {
             Object.keys(weekData).forEach(habitKey => {
                 if(habitKey === 'todos' || habitKey === 'journal' || habitKey === 'hourlyLog' || habitKey === 'failureLog') return;
-                const attribute = ATTRIBUTE_MAP[habitKey];
+                const attribute = getAttributeForHabit(habitKey);
                 if (!attribute) return;
 
                 const values = weekData[habitKey];
@@ -2080,7 +2097,7 @@
                 if (weekData) {
                     // Sum points
                     Object.keys(weekData).forEach(habitKey => {
-                        const attribute = ATTRIBUTE_MAP[habitKey];
+                        const attribute = getAttributeForHabit(habitKey);
                         if (attribute && userHabitConfig) {
                              let habitType = 'checkbox'; // default
                              for(const cat in userHabitConfig) {
@@ -2877,7 +2894,7 @@
                         Object.keys(weekData).forEach(habitKey => {
                             if(habitKey === 'todos' || habitKey === 'journal' || habitKey === 'hourlyLog' || habitKey === 'failureLog') return;
                             
-                            const attribute = ATTRIBUTE_MAP[habitKey];
+                            const attribute = getAttributeForHabit(habitKey);
                             if (!attribute) return;
                             
                             const val = weekData[habitKey][d];
@@ -2905,7 +2922,7 @@
             Object.keys(weekData).forEach(habitKey => {
                 if(habitKey === 'todos' || habitKey === 'journal' || habitKey === 'hourlyLog' || habitKey === 'failureLog') return;
 
-                const attribute = ATTRIBUTE_MAP[habitKey];
+                const attribute = getAttributeForHabit(habitKey);
                 if (!attribute) return;
 
                 const values = weekData[habitKey];
@@ -2922,3 +2939,4 @@
     </script>
 </body>
 </html>
+
