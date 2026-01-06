@@ -572,8 +572,11 @@
     }
 
         async function loadData() {
+            if (!currentUser) return; // Safety check
+
             try {
-                const habitsDoc = await getDoc(doc(db, 'users', 'default', 'data', 'habits'));
+                // CHANGED: 'default' -> currentUser.uid
+                const habitsDoc = await getDoc(doc(db, 'users', currentUser.uid, 'data', 'habits'));
                 if (habitsDoc.exists()) {
                     habits = habitsDoc.data().list || defaultHabits;
                 } else {
@@ -581,42 +584,51 @@
                     await saveHabits();
                 }
 
-                const completionsDoc = await getDoc(doc(db, 'users', 'default', 'data', 'completions'));
+                // CHANGED: 'default' -> currentUser.uid
+                const completionsDoc = await getDoc(doc(db, 'users', currentUser.uid, 'data', 'completions'));
                 if (completionsDoc.exists()) {
                     completions = completionsDoc.data();
                 }
 
-                const statsDoc = await getDoc(doc(db, 'users', 'default', 'data', 'stats'));
+                // CHANGED: 'default' -> currentUser.uid
+                const statsDoc = await getDoc(doc(db, 'users', currentUser.uid, 'data', 'stats'));
                 if (statsDoc.exists()) {
                     userStats = statsDoc.data();
                 }
             } catch (error) {
-                console.log('Using local data');
+                console.log('Error loading data:', error);
+                // Fallback to defaults if offline/error
                 habits = defaultHabits;
             }
         }
 
         async function saveHabits() {
+            if (!currentUser) return;
             try {
-                await setDoc(doc(db, 'users', 'default', 'data', 'habits'), { list: habits });
+                // CHANGED: 'default' -> currentUser.uid
+                await setDoc(doc(db, 'users', currentUser.uid, 'data', 'habits'), { list: habits });
             } catch (error) {
-                console.log('Save failed, using local storage');
+                console.log('Save failed:', error);
             }
         }
 
         async function saveCompletions() {
+            if (!currentUser) return;
             try {
-                await setDoc(doc(db, 'users', 'default', 'data', 'completions'), completions);
+                // CHANGED: 'default' -> currentUser.uid
+                await setDoc(doc(db, 'users', currentUser.uid, 'data', 'completions'), completions);
             } catch (error) {
-                console.log('Save failed');
+                console.log('Save failed:', error);
             }
         }
 
         async function saveStats() {
+            if (!currentUser) return;
             try {
-                await setDoc(doc(db, 'users', 'default', 'data', 'stats'), userStats);
+                // CHANGED: 'default' -> currentUser.uid
+                await setDoc(doc(db, 'users', currentUser.uid, 'data', 'stats'), userStats);
             } catch (error) {
-                console.log('Save failed');
+                console.log('Save failed:', error);
             }
         }
 
@@ -1328,4 +1340,5 @@
     </script>
 </body>
 </html>
+
 
