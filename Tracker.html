@@ -538,7 +538,14 @@
                 wealth: 7
             }
         };
-
+        // HELPER: Get correct local date string (YYYY-MM-DD)
+        // Fixes the bug where late-night habits count for the previous day
+        function getLocalDateString() {
+            const date = new Date();
+            const offset = date.getTimezoneOffset() * 60000;
+            const localDate = new Date(date.getTime() - offset);
+            return localDate.toISOString().split('T')[0];
+        }
         // Default habits
         const defaultHabits = [
             { id: '1', name: 'Morning Exercise', category: 'Health', xp: 15, icon: '🏃', color: '#fecaca' },
@@ -677,7 +684,8 @@
             }
 
         function getTrackerView() {
-            const today = new Date().toISOString().split('T')[0];
+            // Old: const today = new Date().toISOString().split('T')[0];
+            const today = getLocalDateString(); // New
             const todayCompletions = completions[today] || [];
             const completed = todayCompletions.length;
             const total = habits.length;
@@ -737,7 +745,8 @@
         }
 
         function getLogView() {
-            const today = new Date().toISOString().split('T')[0];
+            // Old: const today = new Date().toISOString().split('T')[0];
+            const today = getLocalDateString(); // New
             const hours = Array.from({length: 24}, (_, i) => i);
 
             return `
@@ -997,11 +1006,55 @@
         });
     }
 
-        window.toggleHabit = async function(habitId) {
-            const today = new Date().toISOString().split('T')[0];
+            window.toggleHabit = async function(habitId) {
+            const today = getLocalDateString(); // FIXED: Uses local date
             if (!completions[today]) {
                 completions[today] = [];
             }
+        
+            const index = completions[today].indexOf(habitId);
+            const isAdding = index === -1;
+        
+            // --- 1. OPTIMISTIC UI UPDATE (Instant) ---
+            // Update local state immediately
+            if (isAdding) {
+                completions[today].push(habitId);
+                // Find habit to add XP locally
+                const habit = habits.find(h => h.id === habitId);
+                if (habit) {
+                    userStats.totalXP += habit.xp;
+                    updateStats(habit.category);
+                     // Level up check (optimistic)
+                     while (userStats.totalXP >= 100) {
+                        userStats.level++;
+                        userStats.totalXP -= 100;
+                    }
+                }
+            } else {
+                completions[today].splice(index, 1);
+                // Remove XP locally
+                const habit = habits.find(h => h.id === habitId);
+                if (habit) {
+                    userStats.totalXP = Math.max(0, userStats.totalXP - habit.xp);
+                }
+            }
+        
+            // Force re-render of Tracker View IMMEDIATELY so it feels instant
+            if (currentView === 'tracker') {
+                document.getElementById('content').innerHTML = getTrackerView();
+            }
+        
+            // --- 2. BACKGROUND SYNC (Server) ---
+            // We send data to Firebase while the user continues using the app
+            try {
+                await saveCompletions();
+                await saveStats();
+            } catch (error) {
+                console.error("Sync failed:", error);
+                // Optional: Revert changes here if strict data integrity is required
+                alert("Sync failed. Check your connection.");
+            }
+        }
 
             const index = completions[today].indexOf(habitId);
             if (index > -1) {
@@ -1071,7 +1124,8 @@
         }
 
         window.saveHourActivity = function(hour, activity) {
-            const today = new Date().toISOString().split('T')[0];
+            // Old: const today = new Date().toISOString().split('T')[0];
+            const today = getLocalDateString(); // New
             if (!hourlyLog[today]) {
                 hourlyLog[today] = {};
             }
@@ -1090,19 +1144,23 @@
         }
 
         function getLast7Days() {
-            const days = [];
-            for (let i = 6; i >= 0; i--) {
-                const date = new Date();
-                date.setDate(date.getDate() - i);
-                days.push(date.toISOString().split('T')[0]);
-            }
-            return days;
+        const days = [];
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            // Manually adjust to local string to match getLocalDateString logic
+            const offset = date.getTimezoneOffset() * 60000;
+            const localDate = new Date(date.getTime() - offset);
+            days.push(localDate.toISOString().split('T')[0]);
         }
+        return days;
+    }
 
         function calculateStreak() {
             const dates = Object.keys(completions).sort().reverse();
             let streak = 0;
-            const today = new Date().toISOString().split('T')[0];
+            // Old: const today = new Date().toISOString().split('T')[0];
+            const today = getLocalDateString(); // New
             
             for (let i = 0; i < dates.length; i++) {
                 const date = new Date(dates[i]);
@@ -1353,6 +1411,7 @@
     </script>
 </body>
 </html>
+
 
 
 
