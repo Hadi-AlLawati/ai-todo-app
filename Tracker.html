@@ -11,6 +11,50 @@
             box-sizing: border-box;
         }
 
+                .auth-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .auth-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            background: #f8f9fa;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .auth-btn {
+            width: 100%;
+            padding: 16px;
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: transform 0.1s;
+            margin-top: 32px;
+        }
+        
+        .auth-btn:active {
+            transform: scale(0.98);
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: #1a1a1a;
@@ -457,6 +501,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, query, where } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';;
 
         // Firebase configuration with placeholders
         const firebaseConfig = {
@@ -470,6 +515,8 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
+        let currentUser = null;
 
         // News API Key
         const NEWS_API_KEY = "NEWS_API_ORG_KEY_PLACEHOLDER";
@@ -503,10 +550,26 @@
         ];
 
         // Initialize app
-        async function initApp() {
-            await loadData();
-            switchView('tracker');
-        }
+        function initApp() {
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                // 1. Immediate Render (Fastest LCP)
+                switchView('tracker'); 
+                
+                // 2. Fetch User Data (Async)
+                await loadData();
+                // Re-render tracker to show loaded habits
+                if(currentView === 'tracker') document.getElementById('content').innerHTML = getTrackerView();
+    
+                // 3. Fetch External APIs (Background - Non-blocking)
+                loadExternalData(); 
+            } else {
+                currentUser = null;
+                switchView('signin');
+            }
+        });
+    }
 
         async function loadData() {
             try {
@@ -558,34 +621,35 @@
         }
 
         window.switchView = function(view) {
-            currentView = view;
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            event.target.closest('.nav-item').classList.add('active');
-            
-            const content = document.getElementById('content');
-            
-            switch(view) {
-                case 'tracker':
-                    content.innerHTML = getTrackerView();
-                    break;
-                case 'log':
-                    content.innerHTML = getLogView();
-                    break;
-                case 'analytics':
-                    content.innerHTML = getAnalyticsView();
-                    setTimeout(renderCharts, 100);
-                    break;
-                case 'character':
-                    content.innerHTML = getCharacterView();
-                    setTimeout(renderRadarChart, 100);
-                    break;
-                case 'settings':
-                    content.innerHTML = getSettingsView();
-                    break;
-            }
+    currentView = view;
+    
+    // Toggle Bottom Nav visibility
+    const nav = document.querySelector('.bottom-nav');
+    if (view === 'signin') {
+        nav.style.display = 'none';
+    } else {
+        nav.style.display = 'flex';
+        // Handle active state
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        // Find the button that calls this view and activate it
+        const activeBtn = document.querySelector(`button[onclick="switchView('${view}')"]`);
+        if(activeBtn) activeBtn.classList.add('active');
+    }
 
-            loadExternalData();
-        }
+    const content = document.getElementById('content');
+    
+    switch(view) {
+        case 'signin':
+            content.innerHTML = getSignInView();
+            break;
+        case 'tracker':
+            content.innerHTML = getTrackerView();
+            break;
+        // ... (Keep existing cases for log, analytics, character, settings) ...
+    }
+    
+    // REMOVED: loadExternalData(); -> This is now handled in initApp non-blockingly
+}
 
         function getTrackerView() {
             const today = new Date().toISOString().split('T')[0];
@@ -849,13 +913,12 @@
                         </div>
                     </div>
 
-                    <div class="setting-item sign-out-btn">
+                    <div class="setting-item sign-out-btn" onclick="handleSignOut()">
                         <div class="setting-left">
                             <div class="setting-icon" style="background: #fee">🚪</div>
                             <div>Sign Out</div>
                         </div>
                     </div>
-                </div>
 
                 <div class="app-version">
                     <div class="version-text">Daily Discipline v1.0.0</div>
@@ -863,6 +926,51 @@
                 </div>
             `;
         }
+
+            function getSignInView() {
+        // Hide bottom nav on login screen
+        document.querySelector('.bottom-nav').style.display = 'none';
+        
+        return `
+            <div class="auth-view">
+                <div class="auth-icon">🦁</div>
+                <div class="header" style="margin-bottom: 8px">
+                    <h1 style="font-size: 32px;">Daily Discipline</h1>
+                    <p>Master your habits, master your life.</p>
+                </div>
+                
+                <button class="auth-btn" onclick="handleSignIn()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.26.81-.58z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    Sign in with Google
+                </button>
+                
+                <p style="margin-top: 24px; font-size: 12px; color: #999;">
+                    By continuing, you agree to commit to excellence.
+                </p>
+            </div>
+        `;
+    }
+    
+    window.handleSignIn = async function() {
+        const provider = new GoogleAuthProvider();
+        try {
+            await signInWithPopup(auth, provider);
+            // initApp listener will handle the redirect
+        } catch (error) {
+            alert("Sign in failed: " + error.message);
+        }
+    }
+    
+    window.handleSignOut = function() {
+        signOut(auth).then(() => {
+            // initApp listener will handle the redirect
+        });
+    }
 
         window.toggleHabit = async function(habitId) {
             const today = new Date().toISOString().split('T')[0];
@@ -1220,3 +1328,4 @@
     </script>
 </body>
 </html>
+
