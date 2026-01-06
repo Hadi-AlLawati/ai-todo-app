@@ -633,35 +633,48 @@
         }
 
         window.switchView = function(view) {
-    currentView = view;
-    
-    // Toggle Bottom Nav visibility
-    const nav = document.querySelector('.bottom-nav');
-    if (view === 'signin') {
-        nav.style.display = 'none';
-    } else {
-        nav.style.display = 'flex';
-        // Handle active state
-        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-        // Find the button that calls this view and activate it
-        const activeBtn = document.querySelector(`button[onclick="switchView('${view}')"]`);
-        if(activeBtn) activeBtn.classList.add('active');
-    }
-
-    const content = document.getElementById('content');
-    
-    switch(view) {
-        case 'signin':
-            content.innerHTML = getSignInView();
-            break;
-        case 'tracker':
-            content.innerHTML = getTrackerView();
-            break;
-        // ... (Keep existing cases for log, analytics, character, settings) ...
-    }
-    
-    // REMOVED: loadExternalData(); -> This is now handled in initApp non-blockingly
-}
+                currentView = view;
+                
+                // 1. Handle Navigation Bar Visibility
+                const nav = document.querySelector('.bottom-nav');
+                if (view === 'signin') {
+                    nav.style.display = 'none';
+                } else {
+                    nav.style.display = 'flex';
+                    // Update active state on buttons
+                    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                    const activeBtn = document.querySelector(`button[onclick="switchView('${view}')"]`);
+                    if(activeBtn) activeBtn.classList.add('active');
+                }
+        
+                const content = document.getElementById('content');
+                
+                // 2. Render the specific view
+                switch(view) {
+                    case 'signin':
+                        content.innerHTML = getSignInView();
+                        break;
+                    case 'tracker':
+                        content.innerHTML = getTrackerView();
+                        break;
+                    case 'log':
+                        content.innerHTML = getLogView();
+                        break;
+                    case 'analytics':
+                        content.innerHTML = getAnalyticsView();
+                        // We must wait for HTML to render before drawing the chart
+                        setTimeout(renderCharts, 100); 
+                        break;
+                    case 'character':
+                        content.innerHTML = getCharacterView();
+                        // We must wait for HTML to render before drawing the chart
+                        setTimeout(renderRadarChart, 100); 
+                        break;
+                    case 'settings':
+                        content.innerHTML = getSettingsView();
+                        break;
+                }
+            }
 
         function getTrackerView() {
             const today = new Date().toISOString().split('T')[0];
@@ -1340,5 +1353,6 @@
     </script>
 </body>
 </html>
+
 
 
