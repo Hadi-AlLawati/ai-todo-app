@@ -543,12 +543,12 @@
             totalXP: 0,
             level: 1,
             stats: {
-                vitality: 15,
-                intellect: 12,
-                creativity: 10,
-                social: 8,
-                spirit: 9,
-                wealth: 7
+                vitality: 0,
+                intellect: 0,
+                creativity: 0,
+                social: 0,
+                spirit: 0,
+                wealth: 0
             }
         };
         // HELPER: Get correct local date string (YYYY-MM-DD)
@@ -1020,56 +1020,59 @@
     }
 
             window.toggleHabit = async function(habitId) {
-            const today = getLocalDateString(); // FIXED: Uses local date
+            const today = getLocalDateString(); 
             if (!completions[today]) {
                 completions[today] = [];
             }
         
             const index = completions[today].indexOf(habitId);
             const isAdding = index === -1;
+            const habit = habits.find(h => h.id === habitId);
+
+            if (!habit) return; // Failsafe
         
-            // --- 1. OPTIMISTIC UI UPDATE (Instant) ---
-            // Update local state immediately
             if (isAdding) {
                 completions[today].push(habitId);
-                // Find habit to add XP locally
-                const habit = habits.find(h => h.id === habitId);
-                if (habit) {
-                    userStats.totalXP += habit.xp;
-                    updateStats(habit.category);
-                     // Level up check (optimistic)
-                     while (userStats.totalXP >= 100) {
-                        userStats.level++;
-                        userStats.totalXP -= 100;
-                    }
+                userStats.totalXP += habit.xp;
+                updateStats(habit.category, 1); // Pass 1 to ADD
+                
+                // Level up check
+                while (userStats.totalXP >= 100) {
+                    userStats.level++;
+                    userStats.totalXP -= 100;
                 }
             } else {
                 completions[today].splice(index, 1);
-                // Remove XP locally
-                const habit = habits.find(h => h.id === habitId);
-                if (habit) {
-                    userStats.totalXP = Math.max(0, userStats.totalXP - habit.xp);
+                userStats.totalXP -= habit.xp;
+                updateStats(habit.category, -1); // Pass -1 to SUBTRACT
+                
+                // Level down check
+                while (userStats.totalXP < 0 && userStats.level > 1) {
+                    userStats.level--;
+                    userStats.totalXP += 100;
+                }
+                
+                // Hard floor at Level 1, 0 XP
+                if (userStats.level === 1 && userStats.totalXP < 0) {
+                    userStats.totalXP = 0;
                 }
             }
         
-            // Force re-render of Tracker View IMMEDIATELY so it feels instant
+            // Force UI update
             if (currentView === 'tracker') {
                 document.getElementById('content').innerHTML = getTrackerView();
             }
         
-            // --- 2. BACKGROUND SYNC (Server) ---
-            // We send data to Firebase while the user continues using the app
+            // Background sync
             try {
                 await saveCompletions();
                 await saveStats();
             } catch (error) {
                 console.error("Sync failed:", error);
-                // Optional: Revert changes here if strict data integrity is required
-                alert("Sync failed. Check your connection.");
             }
         }
 
-        function updateStats(category) {
+function updateStats(category, modifier) {
             const statMap = {
                 'Health': 'vitality',
                 'Learning': 'intellect',
@@ -1080,8 +1083,10 @@
             };
 
             const stat = statMap[category];
-            if (stat && userStats.stats[stat]) {
-                userStats.stats[stat]++;
+            // Ensure stat exists and prevent it from dropping below 0
+            if (stat && userStats.stats[stat] !== undefined) {
+                userStats.stats[stat] += modifier;
+                if (userStats.stats[stat] < 0) userStats.stats[stat] = 0;
             }
         }
 
@@ -1397,6 +1402,7 @@
     </script>
 </body>
 </html>
+
 
 
 
