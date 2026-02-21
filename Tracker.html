@@ -1056,33 +1056,6 @@
             }
         }
 
-            const index = completions[today].indexOf(habitId);
-            if (index > -1) {
-                completions[today].splice(index, 1);
-                const habit = habits.find(h => h.id === habitId);
-                if (habit) {
-                    userStats.totalXP = Math.max(0, userStats.totalXP - habit.xp);
-                }
-            } else {
-                completions[today].push(habitId);
-                const habit = habits.find(h => h.id === habitId);
-                if (habit) {
-                    userStats.totalXP += habit.xp;
-                    updateStats(habit.category);
-                    
-                    // Level up check
-                    while (userStats.totalXP >= 100) {
-                        userStats.level++;
-                        userStats.totalXP -= 100;
-                    }
-                }
-            }
-
-            await saveCompletions();
-            await saveStats();
-            switchView('tracker');
-        }
-
         function updateStats(category) {
             const statMap = {
                 'Health': 'vitality',
@@ -1411,6 +1384,7 @@
     </script>
 </body>
 </html>
+
 
 
 
